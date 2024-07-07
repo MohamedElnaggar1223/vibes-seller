@@ -1,5 +1,4 @@
 'use client'
-import loading from "@/app/[locale]/(root)/loading";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Form, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { countryCodes } from "@/constants";
