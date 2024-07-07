@@ -7,6 +7,7 @@ import AuthHeader from "@/components/shared/AuthHeader";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import TranslationsProvider from "@/providers/TranslationsProvider";
+import { i18nConfig } from "@/i18nConfig";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -21,6 +22,10 @@ export const metadata: Metadata = {
   title: "Vibes",
   description: "Buy and sell your tickets online",
 };
+
+export function generateStaticParams() {
+  return i18nConfig.locales.map(locale => ({ locale }));
+}
 
 export default async function RootLayout({
   children,
