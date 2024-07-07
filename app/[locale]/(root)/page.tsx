@@ -1,7 +1,6 @@
 import Search from "@/components/Homepage/Search/Search";
 import SearchLoading from "@/components/Homepage/Search/SearchLoading";
 import SearchBar from "@/components/shared/SearchBar";
-import { initAdmin } from "@/firebase/server/config";
 import { getCategories, getEvents } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
