@@ -31,7 +31,7 @@ export default function SideBar()
                         <li onClick={() => router.push("/digital-products")} className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', pathname?.includes('/digital-prodcuts') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}>
                             <p>Digital Products</p>
                         </li>
-                        <li onClick={() => router.push("/")} className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', (pathname === '/ar/' || pathname === '/') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}>
+                        <li onClick={() => router.push("/")} className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', (!pathname?.includes('/dashboard') && !pathname?.includes('/digital-prodcuts') && !pathname?.includes('/hotel-reservations')) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}>
                             <p>Events</p>
                         </li>
                         <li onClick={() => router.push("/hotel-reservations")} className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', pathname?.includes('/hotel-reservations') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}>
