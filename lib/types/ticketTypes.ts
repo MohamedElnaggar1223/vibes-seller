@@ -9,6 +9,9 @@ export type TicketType = {
     totalPaid: number,
     userId: string,
     status: 'pending' | 'paid'
+    forSale?: boolean
+    salePrice?: number | string
+    saleStatus?: 'pending' | 'sold' | 'cancelled'
 }
 
 export type PromoCode = {

@@ -20,7 +20,7 @@ export default async function UserTickets({ eventId }: Props)
 
     const finalUserTickets = await Promise.all(userTickets!)
     
-    const userEventTickets = finalUserTickets?.filter((ticket) => ticket?.eventId === eventId)
+    const userEventTickets = finalUserTickets?.filter((ticket) => ticket?.eventId === eventId && !ticket.forSale)
 
     return (
         <div className='relative flex flex-col gap-4 w-full'>
@@ -28,7 +28,7 @@ export default async function UserTickets({ eventId }: Props)
                 <p className='font-poppins text-xs lg:text-md font-extralight text-white'>Please Select the tickets you want to sell</p>
                 <p className='font-poppins text-xs lg:text-md font-normal text-white'>Showing a total of ({userEventTickets?.length}) Tickets</p>
             </div>
-            <UserTicketsTable tickets={userEventTickets} />
+            <UserTicketsTable userId={user?.id!} tickets={userEventTickets} />
         </div>
     )
 }

@@ -7,13 +7,21 @@ import { Checkbox } from "../ui/checkbox"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import Image from "next/image"
 import TicketPrice from "./TicketPrice"
+import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
+import { addDoc, collection, doc, runTransaction, Timestamp } from "firebase/firestore"
+import { db } from "@/firebase/client/config"
+import { Loader2 } from "lucide-react"
 
 type Props = {
     tickets: TicketType[]
+    userId: string
 }
 
-export default function UserTicketsTable({ tickets }: Props) 
+export default function UserTicketsTable({ tickets, userId }: Props) 
 {
+    const router = useRouter()
+
     const ticketsGroups = useMemo(() => {
         let ticketsCategories: { [key: string]: TicketType[] } = {}
 
@@ -34,6 +42,12 @@ export default function UserTicketsTable({ tickets }: Props)
     const [sellingType, setSellingType] = useState<'individual' | 'bundle' | undefined>(undefined)
     const [choosePricesOpen, setChoosePricesOpen] = useState(false)
     const [ticketsSelectedWithPrice, setTicketsSelectedWithPrice] = useState<(TicketType & { salePrice: string })[]>([])
+    const [unifyPriceOpen, setUnifyPriceOpen] = useState(false)
+    const [unifyPrice, setUnifyPrice] = useState(false)
+    const [unifyPriceValue, setUnifyPriceValue] = useState('')
+    const [agreeToTerms, setAgreeToTerms] = useState(false)
+    const [bundlePrice, setBundlePrice] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const ticketsNumber = useMemo(() => Object.values(ticketsSelect).reduce((acc, tickets) => acc + tickets.length, 0), [ticketsSelect])
 
@@ -43,13 +57,52 @@ export default function UserTicketsTable({ tickets }: Props)
 
             Object.entries(ticketsSelect).forEach(([key, tickets]) => {
                 tickets.forEach(ticket => {
-                    ticketsWithPrice.push({ ...ticket, salePrice: '0.00' })
+                    ticketsWithPrice.push({ ...ticket, salePrice: '' })
                 })
             })
 
             return ticketsWithPrice
         })
     }, [ticketsSelect])
+
+    const handleSellTickets = async () => {
+        setLoading(true)
+        if(sellingType === 'individual') 
+        {
+            await runTransaction(db, async (transaction) => {
+                const ticketsPromise = ticketsSelectedWithPrice.map(async (ticket) => {
+                    const salePrice = typeof ticket.salePrice === 'string' ? parseInt(ticket.salePrice) : typeof ticket.salePrice === 'number' ? ticket.salePrice : 0
+                    const ticketDoc = doc(db, 'tickets', ticket.id)
+                    await transaction.update(ticketDoc, { forSale: true, saleStatus: 'pending', salePrice })
+                })
+    
+                await Promise.all(ticketsPromise)
+            })
+        }
+        else if(sellingType === 'bundle') 
+        {
+            const addedBundle = {
+                userId,
+                eventId: ticketsSelectedWithPrice.length ? ticketsSelectedWithPrice[0].eventId : null,
+                tickets: ticketsSelectedWithPrice.map(ticket => ticket.id),
+                price: typeof bundlePrice === 'string' ? parseInt(bundlePrice) : bundlePrice,
+                exactDate: Timestamp.now(),
+                status: 'pending'
+            }
+            await runTransaction(db, async (transaction) => {
+                await addDoc(collection(db, 'bundles'), addedBundle)
+
+                const ticketsPromise = ticketsSelectedWithPrice.map(async (ticket) => {
+                    const ticketDoc = doc(db, 'tickets', ticket.id)
+                    await transaction.update(ticketDoc, { forSale: true })
+                })
+
+                await Promise.all(ticketsPromise)
+            })
+        }
+        router.push(`/?success=${ticketsSelectedWithPrice.length}`)
+        setLoading(false)
+    }
 
     return (
         <div className='flex flex-col gap-4 w-full'>
@@ -180,14 +233,139 @@ export default function UserTicketsTable({ tickets }: Props)
                             </p>
                         </div>
                     </DialogHeader>
-                    <div className='flex flex-col gap-4'>
-                        <p className='ml-auto underline font-poppins font-normal text-base text-center cursor-pointer'>
-                            Unify Price
-                        </p>
-                        <div className='flex flex-col w-full gap-2 max-h-[480px] overflow-auto'>
-                            {ticketsSelectedWithPrice.map((ticket, index) => <TicketPrice index={index} key={ticket.id} ticket={ticket} setTicketsSelectedWithPrice={setTicketsSelectedWithPrice} />)}
+                    {sellingType === 'individual' ? (
+                        <div className='flex flex-col gap-4'>
+                            {unifyPrice ? (
+                                <p onClick={() => {setUnifyPrice(false); setTicketsSelectedWithPrice(prev => prev.map(ticket => ({...ticket, salePrice: ''})))}} className={cn('ml-auto underline font-poppins font-normal text-base text-center cursor-pointer unify-price')}>
+                                    Cancel Unify Price
+                                </p>
+                            ) : (
+                                <p onClick={() => {setUnifyPrice(true); setUnifyPriceOpen(true)}} className={cn('ml-auto underline font-poppins font-normal text-base text-center cursor-pointer')}>
+                                    Unify Price
+                                </p>
+                            ) }
+                            <div className='flex flex-col w-full gap-2 max-h-[480px] overflow-auto'>
+                                {ticketsSelectedWithPrice.map((ticket, index) => <TicketPrice index={index} key={ticket.id} ticket={ticket} setTicketsSelectedWithPrice={setTicketsSelectedWithPrice} />)}
+                            </div>
+                            <div className='w-full mt-8 flex items-center justify-center gap-2'>
+                                <button 
+                                    onClick={() => {
+                                        setChoosePricesOpen(false)
+                                    }} 
+                                    className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    disabled={ticketsSelectedWithPrice.find(ticket => !ticket.salePrice) !== undefined} 
+                                    onClick={() => setAgreeToTerms(true)}
+                                    className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
+                                >
+                                    Sell Tickets
+                                </button>
+                            </div>
                         </div>
+                    ) : (
+                        <div className='flex flex-col gap-4'>
+                            <div className='flex flex-col w-full gap-2 max-h-[480px] overflow-auto'>
+                                <div className='flex pl-6 pr-12 py-1 items-center justify-between bg-black w-full'>
+                                    <p className='font-poppins font-semibold text-base w-20 text-center text-white'>Bundle</p>
+                                    <p className='font-poppins text-sm w-20 text-center text-white'>Bundle Price</p>
+                                </div>
+                                <div className='flex w-full gap-2 px-2 relative'>
+                                    <div className='flex flex-1 flex-col items-start justify-start gap-2'>
+                                        {ticketsSelectedWithPrice.map((ticket, index) => (
+                                            <div className="flex gap-1">
+                                                <p className={cn('rounded-full text-sm h-7 w-7 text-white flex items-center justify-center text-center font-poppins', parseInt(bundlePrice) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'bg-[#D9D9D9]')}>{index + 1}</p>
+                                                <p className='font-poppins text-base w-20 text-center text-black'>{Object.keys(ticket.tickets)[0]}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex-1 flex items-end justify-start">
+                                        <input value={bundlePrice} onChange={(e) => setBundlePrice(prev => /^-?\d+(\.\d+)?$/.test(e.target.value) ? e.target.value : prev)} placeholder="0.00 EGP" className='bg-[#1E1E1E] sticky top-2 mb-auto ml-auto rounded-sm w-20 text-center h-7 text-white font-poppins text-sm font-normal' />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='w-full mt-8 flex items-center justify-center gap-2'>
+                                <button 
+                                    onClick={() => {
+                                        setChoosePricesOpen(false)
+                                    }} 
+                                    className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    disabled={!bundlePrice} 
+                                    onClick={() => setAgreeToTerms(true)}
+                                    className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
+                                >
+                                    Sell Bundle
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+            <Dialog open={unifyPriceOpen} onOpenChange={setUnifyPriceOpen}>
+                <DialogContent>
+                    <DialogHeader className='flex items-center justify-center gap-2'>
+                        <h2 className="text-base font-semibold font-poppins leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            Please set price for ({ticketsNumber}) tickets
+                        </h2>
+                        <div className='flex gap-1 items-start justify-center'>
+                            <Image
+                                src="/assets/bulb.svg"
+                                alt="bulb"
+                                width={17}
+                                height={17} 
+                            />
+                            <p className='font-poppins font-normal text-sm text-center'>
+                                Tip : we recommend you half the ticket/bundle price as this <br />
+                                will increase the chances of being sold!
+                            </p>
+                        </div>
+                    </DialogHeader>
+                    <input placeholder="Price Per Ticket" className='outline-none text-center mx-auto rounded-md w-fit px-1 py-4 bg-white shadow-2xl border border-[rgba(0,0,0,0.15)]' value={unifyPriceValue} onChange={(e) => setUnifyPriceValue(prev => /^-?\d+(\.\d+)?$/.test(e.target.value) ? e.target.value : prev)} />
+                    <button 
+                        disabled={!unifyPriceValue} 
+                        onClick={() => {
+                            setTicketsSelectedWithPrice(prev => prev.map(ticket => ({ ...ticket, salePrice: unifyPriceValue })))
+                            setUnifyPriceOpen(false)
+                        }} 
+                        className='px-10 py-4 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
+                    >
+                        Confirm Price
+                    </button>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={agreeToTerms} onOpenChange={setAgreeToTerms}>
+                <DialogContent className='flex flex-col gap-2 items-center justify-center py-16 px-4 w-screen max-w-[620px]'>
+                    <p className='text-center font-poppins text-base'>
+                        Upon agreeing to sell tickets bought from a platform other than Vibes, your money will be held by Vibes and released into your bank account once event ends. Funds usually takes 15-20 days to be released into sellers bank account.
+                    </p>
+                    <div className='w-full mt-8 flex items-center justify-center gap-2'>
+                        <button 
+                            onClick={() => {
+                                setAgreeToTerms(false)
+                                setChoosePricesOpen(false)
+                            }}
+                            className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
+                        >
+                            Decline
+                        </button>
+                        <button 
+                            onClick={handleSellTickets} 
+                            className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
+                        >
+                            Agree to terms
+                        </button>
                     </div>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={loading}>
+                <DialogContent className='flex items-center justify-center bg-transparent border-none outline-none'>
+                    <Loader2 className='animate-spin' size={42} color="#5E1F3C" />
                 </DialogContent>
             </Dialog>
         </div>

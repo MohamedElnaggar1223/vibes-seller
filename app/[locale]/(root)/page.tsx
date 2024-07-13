@@ -1,6 +1,7 @@
 import Search from "@/components/Homepage/Search/Search";
 import SearchLoading from "@/components/Homepage/Search/SearchLoading";
 import SearchBar from "@/components/shared/SearchBar";
+import SuccessMessage from "@/components/shared/SuccessMessage";
 import { getCategories, getEvents } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,6 +23,7 @@ export default async function Home({ searchParams, params }: Props)
 	const date = typeof searchParams.date === 'string' ? searchParams.date : undefined
 	const country = typeof searchParams.country === 'string' && (searchParams.country === 'UAE' || searchParams.country === 'Egypt' || searchParams.country === 'KSA') ? searchParams.country : undefined
 	const category = typeof searchParams.category === 'string' ? searchParams.category : undefined
+	const success = typeof searchParams.success === 'string' ? searchParams.success : undefined
 	
 	return (
 		<section className='flex flex-col items-center justify-center flex-1 gap-8 overflow-x-hidden px-6 md:px-20' key={Math.random()}>
@@ -52,6 +54,7 @@ export default async function Home({ searchParams, params }: Props)
 					</div>
 				)
 			}
+			{success && <SuccessMessage ticketsNum={parseInt(success)} />}
 		</section>
 	)
 }
