@@ -11,7 +11,7 @@ export type TicketType = {
     status: 'pending' | 'paid'
     forSale?: boolean
     salePrice?: number | string
-    saleStatus?: 'pending' | 'sold' | 'cancelled'
+    saleStatus?: 'pending' | 'sold' | 'cancelled' | 'onSale' | 'inEscrow'
 }
 
 export type PromoCode = {
@@ -26,3 +26,15 @@ export type PromoCode = {
     singleEvent: boolean,
     type: '$' | '%'
 }
+
+export type Bundle = {
+    id: string,
+    eventId: string,
+    createdAt: Date,
+    price: number,
+    status: 'pending' | 'sold' | 'cancelled' | 'onSale' | 'inEscrow'
+    userId: string
+    tickets: string[]
+}
+
+export type TicketOrBundle = (TicketType | Bundle) & { type: 'individual' | 'bundle' }

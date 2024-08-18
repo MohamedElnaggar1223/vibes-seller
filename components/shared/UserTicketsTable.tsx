@@ -106,7 +106,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                 eventId: ticketsSelectedWithPrice.length ? ticketsSelectedWithPrice[0].eventId : null,
                 tickets: ticketsSelectedWithPrice.map(ticket => ticket.id),
                 price: typeof bundlePrice === 'string' ? parseInt(bundlePrice) : bundlePrice,
-                exactDate: Timestamp.now(),
+                createdAt: Timestamp.now(),
                 status: 'pending'
             }
             await runTransaction(db, async (transaction) => {
