@@ -66,7 +66,7 @@ export const getEvents = cache(async () => {
         return {
             ...event.data(),
             createdAt: event.data()?.createdAt?.toDate(),
-            eventTime: event.data()??.eventTime?.toDate(),
+            eventTime: event.data()?.eventTime?.toDate(),
             eventDate: event.data()?.eventDate?.toDate(),
             updatedAt: event.data()?.updatedAt?.toDate(),
         } as EventType
@@ -85,7 +85,7 @@ export const getEvent = cache(async (id: string) => {
     return {
         ...event.data(),
         createdAt: event.data()?.createdAt.toDate(),
-        eventTime: event.data()??.eventTime.toDate(),
+        eventTime: event.data()?.eventTime.toDate(),
         eventDate: event.data()?.eventDate.toDate(),
         updatedAt: event.data()?.updatedAt?.toDate(),
         gatesClose: event.data()?.gatesClose?.toDate(),
