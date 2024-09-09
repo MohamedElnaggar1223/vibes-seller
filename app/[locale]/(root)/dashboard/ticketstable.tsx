@@ -1,8 +1,7 @@
 import FiltersTicketsTable from "@/components/shared/FiltersTicketsTable"
 import SearchBarTicketsTable from "@/components/shared/SearchBarTicketsTable"
-import TicketRow from "@/components/shared/TicketRow"
+import TicketRowContainer from "@/components/shared/TicketRowContainer"
 import { TicketType, Bundle, TicketOrBundle } from "@/lib/types/ticketTypes"
-import Image from "next/image"
 
 type Props = {
     ticketsForSale: TicketType[]
@@ -36,7 +35,7 @@ export default function TicketsTable({ ticketsForSale, bundlesForSale, search, f
                     <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>Status</div>
                 </div>
                 <div className='flex flex-col gap-2 w-full'>
-                    {displayedTickets.map(ticket => <TicketRow key={ticket.id} ticket={ticket as TicketOrBundle} search={search} filter={filter} />)}
+                    {displayedTickets.map(ticket => <TicketRowContainer key={ticket.id} ticket={ticket as TicketOrBundle} search={search} filter={filter} />)}
                 </div>
             </div>
         </section>

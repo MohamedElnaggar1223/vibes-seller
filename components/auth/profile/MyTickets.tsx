@@ -52,7 +52,7 @@ export default function ViewMyTickets({ user }: Props)
         //         ...eventData.data(),
         //         createdAt: eventData.data()?.createdAt?.toDate() ?? undefined,
         //         eventDate: eventData.data()?.eventDate?.toDate() ?? undefined,
-        //         eventTime: eventData.data()?.eventTime?.toDate() ?? undefined,
+        //         eventTime: eventData.data()??.eventTime?.toDate() ?? undefined,
         //         gatesOpen: eventData.data()?.gatesOpen?.toDate() ?? undefined,
         //         gatesClose: eventData.data()?.gatesClose?.toDate() ?? undefined,
         //         updatedAt: eventData.data()?.updatedAt?.toDate() ?? undefined,
@@ -63,7 +63,7 @@ export default function ViewMyTickets({ user }: Props)
 
         // const eventsData = await Promise.all(eventsPromise!)
 
-        const eventsData = (await getDocs(collection(db, 'events'))).docs.map(event => ({...event.data(), id: event.id, createdAt: event.data()?.createdAt?.toDate(), eventDate: event.data()?.eventDate?.toDate(), eventTime: event.data()?.eventTime?.toDate(), gatesOpen: event.data()?.gatesOpen?.toDate(), gatesClose: event.data()?.gatesClose?.toDate(), updatedAt: event.data()?.updatedAt?.toDate()})) as EventType[]
+        const eventsData = (await getDocs(collection(db, 'events'))).docs.map(event => ({...event.data(), id: event.id, createdAt: event.data()?.createdAt?.toDate(), eventDate: event.data()?.eventDate?.toDate(), eventTime: event.data()??.eventTime?.toDate(), gatesOpen: event.data()?.gatesOpen?.toDate(), gatesClose: event.data()?.gatesClose?.toDate(), updatedAt: event.data()?.updatedAt?.toDate()})) as EventType[]
 
         return {
             currentTickets: ticketsData.filter(ticket => eventsData.find(event => event.id === ticket.eventId)?.eventDate! >= Timestamp.now().toDate()),

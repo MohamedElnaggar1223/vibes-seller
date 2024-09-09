@@ -75,7 +75,7 @@ export default function TicketEmail({ event, ticket }: Props)
                                 </Column>
                                 <Column width={466} style={{ marginLeft: '80px' }} align="left" className=''>
                                     <Text className='font-poppins text-3xl text-left'>{event.name}</Text>
-                                    <Text className='font-poppins text-xl text-left'>{months[event.eventDate?.getMonth()]}, {getDaySuffix(event.eventDate?.getDate())}, {event.eventDate?.getFullYear()} - {formatTime(event.eventTime)}</Text>
+                                    <Text className='font-poppins text-xl text-left'>{months[event.eventDate?.getMonth()]}, {getDaySuffix(event.eventDate?.getDate())}, {event.eventDate?.getFullYear()} - {formatTime(event?.eventTime)}</Text>
                                     <Text className='font-poppins text-xl text-left'>{event.venue}, {event.city}, {event.country}</Text>
                                 </Column>
                             </Row>
