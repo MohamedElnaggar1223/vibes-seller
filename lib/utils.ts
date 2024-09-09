@@ -27,6 +27,7 @@ export function getDaySuffix(day: number) {
 }
 
 export const formatTime = (date: Date) => {
+    if(!date) return ''
     let hours = date.getHours()
     let minutes = date.getMinutes().toString()
 
@@ -84,9 +85,9 @@ export const getEvent = cache(async (id: string) => {
     if(event === undefined) return null
     return {
         ...event.data(),
-        createdAt: event.data()?.createdAt.toDate(),
-        eventTime: event.data()?.eventTime.toDate(),
-        eventDate: event.data()?.eventDate.toDate(),
+        createdAt: event.data()?.createdAt?.toDate(),
+        eventTime: event.data()?.eventTime?.toDate(),
+        eventDate: event.data()?.eventDate?.toDate(),
         updatedAt: event.data()?.updatedAt?.toDate(),
         gatesClose: event.data()?.gatesClose?.toDate(),
         gatesOpen: event.data()?.gatesOpen?.toDate(),

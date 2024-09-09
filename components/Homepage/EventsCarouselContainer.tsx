@@ -20,7 +20,7 @@ export default async function EventsCarouselContainer({ events, locale, categori
         return {
             ...eventDoc.data(),
             createdAt: eventDoc.data()?.createdAt.toDate(),
-            eventTime: eventDoc.data()?.eventTime.toDate(),
+            eventTime: eventDoc.data()?.eventTime?.toDate(),
             eventDate: eventDoc.data()?.eventDate.toDate(),
             updatedAt: eventDoc.data()?.updatedAt?.toDate(),
         } as EventType
