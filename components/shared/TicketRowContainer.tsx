@@ -1,4 +1,4 @@
-import { getEvent } from "@/lib/utils";
+import { getEvent, getTicket } from "@/lib/utils";
 import TicketRow from "./TicketRow";
 import { TicketOrBundle, TicketType, Bundle } from "@/lib/types/ticketTypes";
 
@@ -26,5 +26,11 @@ export default async function TicketRowContainer({ ticket, search, filter }: Pro
     if(filter && isTicket(ticket) && ticket.saleStatus !== filter) return null
     if(filter && isBundle(ticket) && ticket.status !== filter) return null
 
-    return <TicketRow event={event} ticket={ticket} />
+    let bundleTickets
+    if(isBundle(ticket)) bundleTickets = await Promise.all(Object.values(ticket.tickets).map(async (ticketKey) => {
+        const ticketData = await getTicket(ticketKey)
+        return {...ticketData, type: 'individual'}
+    }))
+
+    return <TicketRow event={event} ticket={ticket} bundleTickets={bundleTickets} />
 }

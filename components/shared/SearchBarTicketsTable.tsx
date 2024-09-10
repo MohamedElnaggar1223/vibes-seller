@@ -22,7 +22,7 @@ export default function SearchBarTicketsTable({ search, filter }: { search: stri
     }
 
     return (
-        <div className='relative max-w-[360px] w-screen bg-white flex shadow-lg z-[999999] gap-4 rounded-md items-center justify-evenly px-4'>
+        <div className='relative max-w-[360px] w-screen bg-white flex shadow-lg z-[99] gap-4 rounded-md items-center justify-evenly px-4'>
             <Image
                 src='/assets/searchIcon.svg'
                 width={24}

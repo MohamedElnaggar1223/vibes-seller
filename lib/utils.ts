@@ -95,6 +95,13 @@ export const getEvent = cache(async (id: string) => {
 
 })
 
+export const getTicket = cache(async (id: string) => {
+    const admin = await initAdmin()
+    const ticket = (await admin.firestore().collection('tickets').doc(id).get()).data()
+
+    return {...ticket, createdAt: ticket?.createdAt.toDate()} as TicketType
+})
+
 export const getCategory = cache(async (id: string) => {
     const admin = await initAdmin()
     const category = (await admin.firestore().collection('categories').doc(id).get()).data() as Category
@@ -169,6 +176,7 @@ export async function initTranslations(
 }
 
 export const toArabicNums = (price: string) => {
+  if(!price) return ''
   const englishToArabicMap = {
     '0': '٠',
     '1': '١',
@@ -187,6 +195,7 @@ export const toArabicNums = (price: string) => {
 }
 
 export const toArabicDate = (date: string) => {
+  if(!date) return ''
   const englishToArabicMap = {
     '0': '٠',
     '1': '١',
@@ -244,6 +253,7 @@ export const toArabicDate = (date: string) => {
 }
 
 export const toArabicTime = (time: string) => {
+  if(!time) return ''
   const englishToArabicMap = {
     '0': '٠',
     '1': '١',

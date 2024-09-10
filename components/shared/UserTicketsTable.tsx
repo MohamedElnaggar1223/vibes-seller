@@ -110,11 +110,12 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                 status: 'pending'
             }
             await runTransaction(db, async (transaction) => {
-                await addDoc(collection(db, 'bundles'), addedBundle)
+
+                const bundleDoc = await addDoc(collection(db, 'bundles'), addedBundle)
 
                 const ticketsPromise = ticketsSelectedWithPrice.map(async (ticket) => {
                     const ticketDoc = doc(db, 'tickets', ticket.id)
-                    await transaction.update(ticketDoc, { forSale: true })
+                    await transaction.update(ticketDoc, { forSale: true, bundleId: bundleDoc.id })
                 })
 
                 await Promise.all(ticketsPromise)
@@ -154,8 +155,10 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                     eventId: event.id,
                     forSale: false,
                     parkingPass: 0,
+                    platform: platform,
                     seats: event.seated ? ticketUploaded.seat : {},
-                    status: 'pending',
+                    status: 'paid',
+                    saleStatus: 'pending',
                     tickets: { [ticketsType]: 1 },
                     userId: user.id,
                     totalPaid: 0,
@@ -165,7 +168,6 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                 await transaction.set(ticketDoc, ticket)
                 userTickets.push(ticketDoc.id)
                 await transaction.update(userDoc, { tickets: userTickets })
-
 
                 const storageRef = ref(storage, `tickets/events/${event.id}/${ticketsType}/${event.seated ? `${ticketsType}_Row-${ticketUploaded.seat.row}_Seat-${ticketUploaded.seat.column}` : ticket.id}.pdf`)
                 await uploadBytesResumable(storageRef, ticketUploaded.ticket);
