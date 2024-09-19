@@ -108,9 +108,9 @@ export default function TicketRow({ event, ticket, bundleTickets }: Props)
                             />
                             <p className={cn('font-medium text-black h-full flex-1 text-center flex items-center justify-center', (ticket as TicketType).saleStatus === 'sold' ? 'bg-[#A3CCA9]' : 'bg-[#CCCCCC]')}>{event?.name}</p> 
                         </div>
-                        <div className={cn('flex-1 h-full flex items-center justify-center font-medium text-xs text-black text-center font-poppins', ticket.saleStatus === 'sold' ? 'bg-[#CCF5D2]' : 'bg-[#fff]')}>{Object.keys((ticket as TicketType).tickets)[0]}</div>
-                        <div className={cn('flex-1 h-full flex items-center justify-center font-medium text-xs text-black text-center font-poppins', ticket.saleStatus === 'sold' ? 'bg-[#A3CCA9]' : 'bg-[#CCCCCC]')}>Individual Ticket</div>
-                        <div className={cn('flex-[0.333333] h-full flex items-center justify-center font-medium text-xs text-black text-center font-poppins', ticket.saleStatus === 'sold' ? 'bg-[#CCF5D2]' : 'bg-[#fff]')}>1</div>
+                        <div className={cn('flex-1 h-full flex items-center justify-center font-medium text-xs text-black text-center font-poppins', (ticket as TicketType).saleStatus === 'sold' ? 'bg-[#CCF5D2]' : 'bg-[#fff]')}>{Object.keys((ticket as TicketType).tickets)[0]}</div>
+                        <div className={cn('flex-1 h-full flex items-center justify-center font-medium text-xs text-black text-center font-poppins', (ticket as TicketType).saleStatus === 'sold' ? 'bg-[#A3CCA9]' : 'bg-[#CCCCCC]')}>Individual Ticket</div>
+                        <div className={cn('flex-[0.333333] h-full flex items-center justify-center font-medium text-xs text-black text-center font-poppins', (ticket as TicketType).saleStatus === 'sold' ? 'bg-[#CCF5D2]' : 'bg-[#fff]')}>1</div>
                         <div className={cn('flex-1 h-full flex items-center justify-center font-medium text-xs text-black text-center font-poppins rounded-tr-lg rounded-br-lg', eventEnded && 'flex-col gap-2', statusOptions[(ticket as TicketType).saleStatus!].bg, statusOptions[(ticket as TicketType).saleStatus!].color)}>
                             {eventEnded && <p className='font-medium text-sm font-poppins text-[#ff0000]'>Event Ended</p>}
                             {(!eventEnded || (ticket as TicketType).saleStatus === 'inEscrow') && statusOptions[(ticket as TicketType).saleStatus!].text}
