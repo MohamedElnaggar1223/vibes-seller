@@ -1,7 +1,9 @@
 import FiltersTicketsTable from "@/components/shared/FiltersTicketsTable"
 import SearchBarTicketsTable from "@/components/shared/SearchBarTicketsTable"
 import TicketRowContainer from "@/components/shared/TicketRowContainer"
+import { initAdmin } from "@/firebase/server/config"
 import { TicketType, Bundle, TicketOrBundle } from "@/lib/types/ticketTypes"
+import Link from "next/link"
 
 type Props = {
     ticketsForSale: TicketType[]
@@ -10,7 +12,7 @@ type Props = {
     filter?: string
 }
 
-export default function TicketsTable({ ticketsForSale, bundlesForSale, search, filter }: Props)
+export default async function TicketsTable({ ticketsForSale, bundlesForSale, search, filter }: Props)
 {
     const individualTickets = ticketsForSale.filter(ticket => ticket.salePrice).map(ticket => ({ ...ticket, type: 'individual' }))
     const bundles = bundlesForSale.filter(bundle => bundle.price).map(bundle => ({ ...bundle, type: 'bundle' }))
@@ -20,7 +22,7 @@ export default function TicketsTable({ ticketsForSale, bundlesForSale, search, f
     return (
         <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-hidden'>
             <div className='flex w-full items-center justify-between gap-4'>
-                <button className='bg-[#E72377] rounded-[4px] font-light py-3 flex-1 text-sm max-w-[160px] w-screen px-6 text-white font-poppins'>Buyer Requests</button>
+                <Link href='/dashboard?tab=requests' className='bg-[#E72377] rounded-[4px] font-light py-3 flex-1 text-sm max-w-[160px] w-screen px-6 text-white font-poppins'>Buyer Requests</Link>
                 <div className='flex gap-4 items-center justify-center'>
                     <SearchBarTicketsTable search={search} filter={filter} />
                     <FiltersTicketsTable search={search} filter={filter} />

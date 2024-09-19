@@ -20,26 +20,47 @@ export default async function DashboardPage({ searchParams }: Props)
 
     const user = await getUser()
 
+    const exchangeRate = await getExchangeRate()
+
     const ticketsCollection = admin.firestore().collection('tickets')
     const bundlesCollection = admin.firestore().collection('bundles')
 
     const ticketsForSale = (await ticketsCollection.where('forSale', '==', true).where('saleStatus', '!=', null).where('userId', '==', user?.id).get()).docs.map(doc => ({...doc.data(), createdAt: doc.data()?.createdAt.toDate()})) as TicketType[]
     const bundlesForSale = (await bundlesCollection.where('userId', '==', user?.id).get()).docs.map(doc => ({...doc.data(), id: doc.id, createdAt: doc.data()?.createdAt.toDate()})) as Bundle[]
     const ticketsSold = ticketsForSale.filter((doc) => doc.saleStatus === 'sold')
+    const bundlesWithTickets = await Promise.all(bundlesForSale.map(async (bundle) => {
+        const tickets = await ticketsCollection.where('bundleID', '==', bundle.id).where('userId', '!=', user?.id ?? '').get()
+        return {...bundle, tickets: tickets.docs.map(doc => ({...doc.data(), id: doc.id, createdAt: doc.data()?.createdAt.toDate()})) as TicketType[]}
+    }))
     
-    let totalRevenue = ticketsSold.reduce((acc, doc) => acc + (typeof doc.salePrice === 'string' ? parseFloat(doc.salePrice) : doc.salePrice!), 0)
+    let totalRevenue = ticketsSold.reduce((acc, doc) => {
+        const ticketCountry = doc.country
+        const ticketPrice = (typeof doc.salePrice === 'string' ? parseFloat(doc.salePrice) : doc.salePrice!)
+        return acc + (ticketCountry === 'EGP' ? ticketPrice / exchangeRate.USDToEGP : ticketCountry === 'SAR' ? ticketPrice / exchangeRate.USDToSAR : ticketPrice / exchangeRate.USDToAED)
+    }, 0)
     let totalTicketsSold = ticketsSold.length
     let totalTicketsForSale = ticketsForSale.length
     let totalTicketsOnSale = ticketsForSale.filter((doc) => doc.saleStatus === 'onSale').length
-    let totalAmountInEscrow = ticketsForSale.filter((doc) => doc.saleStatus === 'inEscrow').reduce((acc, doc) => acc + (typeof doc.salePrice === 'string' ? parseFloat(doc.salePrice) : doc.salePrice!), 0)
+    let totalAmountInEscrow = ticketsForSale.filter((doc) => doc.saleStatus === 'inEscrow').reduce((acc, doc) => {
+        const ticketCountry = doc.country
+        const ticketPrice = (typeof doc.salePrice === 'string' ? parseFloat(doc.salePrice) : doc.salePrice!)
+        return acc + (ticketCountry === 'EGP' ? ticketPrice / exchangeRate.USDToEGP : ticketCountry === 'SAR' ? ticketPrice / exchangeRate.USDToSAR : ticketPrice / exchangeRate.USDToAED)
+    }, 0)
 
     totalTicketsSold += bundlesForSale.filter((doc) => doc.status === 'sold').map((doc) => doc.tickets.length).reduce((acc, curr) => acc + curr, 0)
-    totalRevenue += bundlesForSale.filter((doc) => doc.status === 'sold').map((doc) => doc.price).reduce((acc, curr) => acc + curr, 0)
+    totalRevenue += bundlesWithTickets.filter((doc) => doc.status === 'sold').reduce((acc, curr) => {
+        const ticketCountry = curr.tickets[0].country
+        const ticketPrice = typeof curr.price === 'string' ? parseFloat(curr.price) : curr.price
+        return acc + (ticketCountry === 'EGP' ? ticketPrice / exchangeRate.USDToEGP : ticketCountry === 'SAR' ? ticketPrice / exchangeRate.USDToSAR : ticketPrice / exchangeRate.USDToAED)
+    }, 0)
+    console.log(totalRevenue)
     totalTicketsForSale += bundlesForSale.map((doc) => doc.tickets.length).reduce((acc, curr) => acc + curr, 0)
     totalTicketsOnSale += bundlesForSale.filter((doc) => doc.status === 'onSale').reduce((acc, curr) => acc + curr.tickets.length, 0)
-    totalAmountInEscrow += bundlesForSale.filter((doc) => doc.status === 'inEscrow').map((doc) => doc.price).reduce((acc, curr) => acc + curr, 0)
-
-    const exchangeRate = await getExchangeRate()
+    totalAmountInEscrow += bundlesWithTickets.filter((doc) => doc.status === 'inEscrow').reduce((acc, curr) => {
+        const ticketCountry = curr.tickets[0].country
+        const ticketPrice = typeof curr.price === 'string' ? parseFloat(curr.price) : curr.price
+        return acc + (ticketCountry === 'EGP' ? ticketPrice / exchangeRate.USDToEGP : ticketCountry === 'SAR' ? ticketPrice / exchangeRate.USDToSAR : ticketPrice / exchangeRate.USDToAED)
+    }, 0)
 
     return (
         <section className='flex flex-col relative flex-1 items-center justify-start p-12 gap-8 max-h-screen'>

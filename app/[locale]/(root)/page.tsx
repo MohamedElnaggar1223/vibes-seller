@@ -2,7 +2,7 @@ import Search from "@/components/Homepage/Search/Search";
 import SearchLoading from "@/components/Homepage/Search/SearchLoading";
 import SearchBar from "@/components/shared/SearchBar";
 import SuccessMessage from "@/components/shared/SuccessMessage";
-import { getCategories, getEvents } from "@/lib/utils";
+import { getCategories, getEventsResell } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -17,7 +17,7 @@ type Props = {
 export default async function Home({ searchParams, params }: Props)
 {
 	const categories = await getCategories()
-	const events = await getEvents()
+	const events = await getEventsResell()
 
 	const search = typeof searchParams.search === 'string' ? searchParams.search : undefined
 	const date = typeof searchParams.date === 'string' ? searchParams.date : undefined

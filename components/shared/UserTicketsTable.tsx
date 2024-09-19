@@ -1,7 +1,7 @@
 'use client'
 
 import { TicketType } from "@/lib/types/ticketTypes"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion"
 import { Checkbox } from "../ui/checkbox"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
@@ -16,6 +16,7 @@ import { EventType } from "@/lib/types/eventTypes"
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { updateRoute } from "@/lib/actions/tickets"
 import { UserType } from "@/lib/types/userTypes"
+import { CountryContext } from "@/providers/CountryProvider"
 
 type Props = {
     tickets: TicketType[]
@@ -33,6 +34,10 @@ type UploadedTicket = {
 
 export default function UserTicketsTable({ tickets, user, event }: Props) 
 {
+    const context = useContext(CountryContext)
+    if(!context) return <Loader2 className='animate-spin' />
+    const { country } = context
+
     const router = useRouter()
 
     const ticketsGroups = useMemo(() => {
@@ -115,7 +120,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
 
                 const ticketsPromise = ticketsSelectedWithPrice.map(async (ticket) => {
                     const ticketDoc = doc(db, 'tickets', ticket.id)
-                    await transaction.update(ticketDoc, { forSale: true, bundleId: bundleDoc.id })
+                    await transaction.update(ticketDoc, { forSale: true, bundleID: bundleDoc.id })
                 })
 
                 await Promise.all(ticketsPromise)
@@ -150,7 +155,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                 const ticketDoc = doc(ticketsCollection)
 
                 const ticket = {
-                    country: 'Egypt',
+                    country: country,
                     createdAt: Timestamp.now() as any,
                     eventId: event.id,
                     forSale: false,
@@ -162,7 +167,8 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                     tickets: { [ticketsType]: 1 },
                     userId: user.id,
                     totalPaid: 0,
-                    id: ticketDoc.id
+                    id: ticketDoc.id,
+                    sentMail: true
                 } as TicketType
 
                 await transaction.set(ticketDoc, ticket)
@@ -197,7 +203,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                     <div onClick={(e) => e.stopPropagation()} className="flex items-center space-x-2 ml-auto">
                                         <Checkbox 
                                             checked={ticketsSelect[key]?.length === ticketsArray.length} 
-                                            onCheckedChange={() => setTicketsSelect(prev => ({ ...prev, [key]: prev[key].length === ticketsArray.length ? [] : ticketsArray }))}
+                                            onCheckedChange={() => setTicketsSelect(prev => ({ ...prev, [key]: prev[key]?.length === ticketsArray.length ? [] : ticketsArray }))}
                                             id="selectAll" 
                                             className='bg-white font-poppins checked:bg-white aria-checked:bg-white min-w-5 min-h-5'
                                         />
@@ -215,8 +221,8 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                             <div key={ticket.id} className='flex rounded-sm items-center justify-between flex-[1_1_40%] bg-[rgba(0,0,0,0.4)] py-4 px-8 text-white'>
                                                 <div className='flex items-center gap-4'>
                                                     <Checkbox 
-                                                        checked={ticketsSelect[key].includes(ticket)} 
-                                                        onCheckedChange={() => setTicketsSelect(prev => ({ ...prev, [key]: prev[key].includes(ticket) ? prev[key].filter(t => t !== ticket) : [...prev[key], ticket] }))}
+                                                        checked={ticketsSelect[key]?.includes(ticket)} 
+                                                        onCheckedChange={() => setTicketsSelect(prev => ({ ...prev, [key]: prev[key]?.includes(ticket) ? prev[key]?.filter(t => t !== ticket) : [...prev[key], ticket] }))}
                                                         id={ticket.id}
                                                         className='min-w-6 min-h-6 bg-white'
                                                     />
@@ -225,6 +231,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                                         className="text-base font-normal font-poppins leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                                     >
                                                         {Object.keys(ticket.tickets)[0]}
+                                                        {ticket.id}
                                                     </label>
                                                 </div>
                                             </div>
@@ -234,18 +241,20 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                             </AccordionItem>
                         ))}
                     </Accordion>
-                    <div className='w-full sticky bottom-0'>
-                        <div className='flex items-center justify-between pb-4'>
-                            <div className='flex flex-col gap-1'>
-                                <p className='font-poppins text-xs font-light text-white'>Have other tickets?</p>
-                                <button onMouseDown={() => setAddTicketsOpen(true)} className='px-10 py-3 bg-white rounded-sm text-black font-poppins text-xs font-medium'>Add ticket</button>
-                            </div>
-                            <div className='flex flex-col gap-1 items-center justify-center'>
-                                <p className='font-poppins text-xs lg:text-sm font-extralight text-white'>({ticketsNumber}) Tickets Selected</p>
-                                <button disabled={ticketsNumber === 0} onMouseDown={() => setConfirmedTickets(true)} className='px-8 py-4 disabled:opacity-65 bg-white rounded-sm text-black font-poppins text-xs lg:text-sm font-medium'>Confirm Selection</button>
+                        <div className='w-full sticky bottom-0'>
+                            <div className='flex items-center justify-between pb-4'>
+                                {event.uploadedTickets && (
+                                    <div className='flex flex-col gap-1'>
+                                        <p className='font-poppins text-xs font-light text-white'>Have other tickets?</p>
+                                        <button onMouseDown={() => setAddTicketsOpen(true)} className='px-10 py-3 bg-white rounded-sm text-black font-poppins text-xs font-medium'>Add ticket</button>
+                                    </div>
+                                )}
+                                <div className='flex flex-col gap-1 items-center justify-center ml-auto'>
+                                    <p className='font-poppins text-xs lg:text-sm font-extralight text-white'>({ticketsNumber}) Tickets Selected</p>
+                                    <button disabled={ticketsNumber === 0} onMouseDown={() => setConfirmedTickets(true)} className='px-8 py-4 disabled:opacity-65 bg-white rounded-sm text-black font-poppins text-xs lg:text-sm font-medium'>Confirm Selection</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
                 </>
             ) : (
                 <div className='flex flex-col items-center justify-center w-full gap-4'>
