@@ -35,7 +35,7 @@ export default async function BuyerRequests()
 
                     return (
                         <div key={ticket.id} className='flex flex-col gap-1'>
-                            <div className='px-8 py-2 bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-md font-medium text-white rounded-[8px]'>
+                            <div className='px-8 py-2 bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] font-medium text-white rounded-[8px]'>
                                 <p className='text-xs font-poppins text-center'>Please send the buyer your tickets through E-mail.Once sent, please upload a proof that shows 
                                 that you did send the ticket below. <br/><br/> Make sure to send the tickets using your {ticket?.platform} E-mail</p>
                             </div>

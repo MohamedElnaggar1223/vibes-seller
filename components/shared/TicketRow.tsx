@@ -1,6 +1,6 @@
 'use client'
 import { EventType } from "@/lib/types/eventTypes"
-import { TicketOrBundle, TicketType } from "@/lib/types/ticketTypes"
+import { Bundle, TicketOrBundle, TicketType } from "@/lib/types/ticketTypes"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { isBundle, isTicket } from "./TicketRowContainer"
@@ -55,7 +55,7 @@ export default function TicketRow({ event, ticket, bundleTickets }: Props)
 
     const [ticketOpen, setTicketOpen] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [price, setPrice] = useState(isTicketCallBack(ticket) ? ticket.salePrice : isBundleCallBack(ticket) ? ticket.price : 0)
+    const [price, setPrice] = useState(isTicketCallBack(ticket) ? (ticket as TicketType).salePrice : isBundleCallBack(ticket) ? (ticket as Bundle).price : 0)
 
     const eventEnded = event.eventDate < new Date()
 
