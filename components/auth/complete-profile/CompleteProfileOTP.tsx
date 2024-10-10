@@ -45,6 +45,7 @@ export default function CompleteProfileOTP({ user }: Props)
 
     const [loading, setLoading] = useState(false)
     const [sentOtp, setSentOtp] = useState(false)
+    const [canType, setCanType] = useState(false)
     // const [timer, setTimer] = useState(60)
     const [error, setError] = useState('')
     const { toast } = useToast()
@@ -94,22 +95,23 @@ export default function CompleteProfileOTP({ user }: Props)
         try
         {
             setSentOtp(true)
-            toast({ 
-                action: (
-                    <Image
-                        src='/assets/check.svg'
-                        width={25} 
-                        height={25}
-                        alt='check' 
-                    />
-                ),
-                title: 'Code Sent Successfully!',
-            })  
             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                 'size': 'normal',
                 'callback': async (response: any) => {
+                    setCanType(true)
                     await handleSendCode()
                     await window.recaptchaVerifier?.clear()
+                    toast({ 
+                        action: (
+                            <Image
+                                src='/assets/check.svg'
+                                width={25} 
+                                height={25}
+                                alt='check' 
+                            />
+                        ),
+                        title: 'Code Sent Successfully!',
+                    })
                 },
                 'expired-callback': () => {
                 }
@@ -127,19 +129,19 @@ console.error(e)
         try
         {
             const appVerifier = window.recaptchaVerifier
+            
+            if (!appVerifier) {
+                throw new Error("reCAPTCHA verifier not initialized");
+            }
+
             const fullPhoneNumber = `${user.countryCode}${user.phoneNumber?.startsWith('0') ? user.phoneNumber.slice(1) : user.phoneNumber}`
-            await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier!)
-            .then((confirmationResult) => {
-                window.confirmationResult = confirmationResult
-            })
-            .catch((error) => {
-                console.error(error)
-                setError(error.message)
-            })
+            
+            const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
+            window.confirmationResult = confirmationResult;
         }
         catch(e: any)
         {
-console.error(e)
+            console.error(e)
             setError('Something went wrong33')
         }
     }
@@ -181,7 +183,7 @@ console.error(e)
                                 render={({ field }) => (
                                     <FormItem className="">
                                         <FormControl>
-                                            <InputOTP pattern={NUMS_ONLY.source} maxLength={6} {...field}>
+                                            <InputOTP disabled={!canType} pattern={NUMS_ONLY.source} maxLength={6} {...field}>
                                                 <InputOTPGroup>
                                                     <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={0} />
                                                     <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={1} />
