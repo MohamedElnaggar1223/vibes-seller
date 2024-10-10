@@ -142,7 +142,7 @@ console.error(e)
         catch(e: any)
         {
             console.error(e)
-            setError('Something went wrong33')
+            setError(e.code)
         }
     }
     
