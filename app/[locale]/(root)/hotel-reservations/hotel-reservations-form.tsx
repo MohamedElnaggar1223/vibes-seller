@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { CalendarIcon } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
+import { useMemo } from "react"
 
 const hotelReservationSchema = z.object({
     name: z.string().min(3, {
@@ -26,7 +27,7 @@ const hotelReservationSchema = z.object({
     }),
     website: z.string().url({
         message: 'Website must be a valid URL'
-    }),
+    }).optional(),
     address: z.string().min(3, {
         message: 'Address must be at least 3 characters long'
     }),
@@ -80,13 +81,16 @@ export default function HotelReservationsForm()
         },
     })
     
+    const canNextFirstSection = useMemo(() => {
+        return [form.getValues('adults'), form.getValues('date'), form.getValues('name'), form.getValues('address'), form.getValues('zipCode'), form.getValues('roomType'), form.getValues('boardType')].every(value => value)
+    }, [form.getValues('address'), form.getValues('adults'), form.getValues('boardType'), form.getValues('date'), form.getValues('name'), form.getValues('roomType'), form.getValues('zipCode')])
+
+    console.log(canNextFirstSection)
+
     function onSubmit(values: z.infer<typeof hotelReservationSchema>) {
     }
 
     form.watch('date')
-
-    console.log("from: ", form.getValues("date.from"))
-    console.log("to: ", form.getValues("date.to"))
 
     return (
         <div className='w-screen max-w-[627px] flex flex-col rounded-[20px] overflow-hidden'>
@@ -116,9 +120,9 @@ export default function HotelReservationsForm()
                     </span>
                 </div>
             </div>
-            <div className="px-8 flex-1 flex w-full bg-white">
+            <div className="px-12 flex-1 flex w-full flex-col bg-white">
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className='flex flex-col gap-4 p-4 w-full'>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className='flex flex-col gap-4 py-4 w-full'>
                         <FormField
                             control={form.control}
                             name="name"
@@ -127,7 +131,7 @@ export default function HotelReservationsForm()
                                     <FormControl>
                                         <input 
                                             placeholder='Hotel Name' 
-                                            className='placeholder:text-[rgba(0,0,0,0.5)] shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
+                                            className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
                                         />
                                     </FormControl>
@@ -142,8 +146,8 @@ export default function HotelReservationsForm()
                                 <FormItem className="">
                                     <FormControl>
                                         <input 
-                                            placeholder='Hotel Name' 
-                                            className='placeholder:text-[rgba(0,0,0,0.5)] shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
+                                            placeholder='Hotel Website Link (Optional)' 
+                                            className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
                                         />
                                     </FormControl>
@@ -160,7 +164,7 @@ export default function HotelReservationsForm()
                                         <FormControl>
                                             <input 
                                                 placeholder='Address' 
-                                                className='placeholder:text-[rgba(0,0,0,0.5)] shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full outline-none rounded-md'
+                                                className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full outline-none rounded-md'
                                                 {...field}
                                             />
                                         </FormControl>
@@ -176,7 +180,7 @@ export default function HotelReservationsForm()
                                         <FormControl>
                                             <input 
                                                 placeholder='Zip Code' 
-                                                className='placeholder:text-[rgba(0,0,0,0.5)] shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-w-[160px] outline-none rounded-md'
+                                                className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-w-[160px] outline-none rounded-md'
                                                 {...field}
                                             />
                                         </FormControl>
@@ -194,7 +198,7 @@ export default function HotelReservationsForm()
                                         <FormControl>
                                             <input 
                                                 placeholder='Room Type' 
-                                                className='placeholder:text-[rgba(0,0,0,0.5)] shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
+                                                className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             />
                                         </FormControl>
@@ -210,7 +214,7 @@ export default function HotelReservationsForm()
                                         <FormControl>
                                             <input 
                                                 placeholder='Board Type' 
-                                                className='placeholder:text-[rgba(0,0,0,0.5)] shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
+                                                className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             />
                                         </FormControl>
@@ -260,6 +264,9 @@ export default function HotelReservationsForm()
                                                     selected={field.value}
                                                     onSelect={field.onChange}
                                                     numberOfMonths={2}
+                                                    disabled={(date) =>
+                                                        date < new Date()
+                                                    }
                                                 />
                                                 </PopoverContent>
                                             </Popover>
@@ -278,7 +285,7 @@ export default function HotelReservationsForm()
                                         <FormControl>
                                             <input 
                                                 placeholder='Adults' 
-                                                className='placeholder:text-[rgba(0,0,0,0.5)] shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
+                                                className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             />
                                         </FormControl>
@@ -294,7 +301,7 @@ export default function HotelReservationsForm()
                                         <FormControl>
                                             <input 
                                                 placeholder='Children' 
-                                                className='placeholder:text-[rgba(0,0,0,0.5)] shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
+                                                className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             />
                                         </FormControl>
@@ -305,6 +312,9 @@ export default function HotelReservationsForm()
                         </div>
                     </form>
                 </Form>
+                <button disabled={!canNextFirstSection} type='button' className={cn('mb-4 w-32 h-11 rounded-[4px] ml-auto text-white', canNextFirstSection ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'bg-[#A7A6A6]')}>
+                    Next
+                </button>
             </div>
         </div>
     )
