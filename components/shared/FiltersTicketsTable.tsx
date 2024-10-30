@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-export default function FiltersTicketsTable({ filter, search }: { filter: string | undefined, search: string | undefined })
+export default function FiltersTicketsTable({ filter, search, tab }: { filter: string | undefined, search: string | undefined, tab: string | undefined })
 {
     const router = useRouter()
 
@@ -10,7 +10,7 @@ export default function FiltersTicketsTable({ filter, search }: { filter: string
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setFilterField(e.target.value)
-        let query = ''
+        let query = (tab ? `tab=${tab}&` : '')
         if(search) query += `search=${search}&`
         if(e.target.value) query += `filter=${e.target.value}&`
         if(query) router.push(`/dashboard?${query}`)
@@ -18,7 +18,7 @@ export default function FiltersTicketsTable({ filter, search }: { filter: string
     }
 
     return (
-        <div className='relative max-w-[160px] w-screen bg-white flex h-[43px] shadow-lg z-[999999] gap-4 rounded-md items-center justify-evenly px-4'>
+        <div className='relative max-w-[160px] w-screen bg-white flex h-[43px] shadow-lg z-[9] gap-4 rounded-md items-center justify-evenly px-4'>
             <select value={filterField} onChange={handleFilterChange} className='w-full outline-none h-full'>
                 <option value="">All</option>
                 <option value="pending">Pending</option>

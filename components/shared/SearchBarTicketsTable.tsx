@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-export default function SearchBarTicketsTable({ search, filter }: { search: string | undefined, filter: string | undefined })
+export default function SearchBarTicketsTable({ search, filter, tab }: { search: string | undefined, filter: string | undefined, tab: string | undefined })
 {
     const { t } = useTranslation()
     const router = useRouter()
@@ -14,7 +14,7 @@ export default function SearchBarTicketsTable({ search, filter }: { search: stri
 
     const handleSubmit = (e?: FormEvent<HTMLFormElement>) => {
         e?.preventDefault()
-        let query = ''
+        let query = (tab ? `tab=${tab}&` : '')
         if(searchField) query += `search=${searchField}&`
         if(filter) query += `filter=${filter}&`
         if(query) router.push(`/dashboard?${query}`)
@@ -22,7 +22,7 @@ export default function SearchBarTicketsTable({ search, filter }: { search: stri
     }
 
     return (
-        <div className='relative max-w-[360px] w-screen bg-white flex shadow-lg z-[99] gap-4 rounded-md items-center justify-evenly px-4'>
+        <div className='relative max-w-[360px] w-screen bg-white flex shadow-lg z-[9] gap-4 rounded-md items-center justify-evenly px-4'>
             <Image
                 src='/assets/searchIcon.svg'
                 width={24}

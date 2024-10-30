@@ -22,8 +22,7 @@ export default async function EventPage({ params }: Props)
 
     return (
         <section className='flex flex-col relative flex-1 items-center justify-start p-12 gap-8'>
-            <Link href="/" className='absolute top-12 left-6 cursor-pointer text-nowrap font-light font-poppins text-white text-sm flex items-center justify-center gap-2'><span className='text-xl'>{"< "}</span> Back</Link>
-            <div className='flex gap-4'>
+            <div className='flex gap-4 max-lg:flex-col'>
                 <div key={event?.id} className='max-lg:max-w-32 max-lg:min-h-32 lg:min-w-56 lg:min-h-56 rounded-lg overflow-hidden'>
                     <Image
                         src={event?.displayPageImage!}

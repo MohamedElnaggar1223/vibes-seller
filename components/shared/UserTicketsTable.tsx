@@ -218,7 +218,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                 <AccordionContent>
                                     <div className='flex flex-wrap gap-4 mt-4'>
                                         {ticketsArray.map(ticket => (
-                                            <div key={ticket.id} className='flex rounded-sm items-center justify-between flex-[1_1_40%] bg-[rgba(0,0,0,0.4)] py-4 px-8 text-white'>
+                                            <div key={ticket.id} className='flex rounded-sm items-center justify-between flex-[1_1_40%] bg-[rgba(0,0,0,0.4)] px-2 py-4 lg:px-8 text-white'>
                                                 <div className='flex items-center gap-4'>
                                                     <Checkbox 
                                                         checked={ticketsSelect[key]?.includes(ticket)} 
@@ -231,7 +231,6 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                                         className="text-base font-normal font-poppins leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                                     >
                                                         {Object.keys(ticket.tickets)[0]}
-                                                        {ticket.id}
                                                     </label>
                                                 </div>
                                             </div>

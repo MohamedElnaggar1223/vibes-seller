@@ -9,6 +9,7 @@ import resourcesToBackend from 'i18next-resources-to-backend';
 import { i18nConfig } from '@/i18nConfig';
 import { PromoCode, TicketType } from "./types/ticketTypes";
 import { UserType } from "./types/userTypes";
+import { Hotel } from "./types/hotelTypes";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -154,6 +155,13 @@ export const getPromoCodes = async () => {
 
     return promoCodes as PromoCode[]
 }
+
+export const getHotel = cache(async (id: string) => {
+    const admin = await initAdmin()
+    const hotel = (await admin.firestore().collection('hotels').doc(id).get()).data()
+
+    return hotel as Hotel
+})
 
 export async function initTranslations(
   locale: string,

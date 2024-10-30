@@ -1,10 +1,16 @@
-import FormattedPrice from "@/components/shared/FormattedPrice"
+import TicketsTable from "./ticketstable"
+import BuyerRequests from "./buyerrequests"
+import Link from "next/link"
+import TicketsCards from "./tickets-cards"
+import { cn } from "@/lib/utils"
 import { initAdmin } from "@/firebase/server/config"
 import { getExchangeRate } from "@/lib/utils"
 import { getUser } from "../layout"
 import { Bundle, TicketType } from "@/lib/types/ticketTypes"
-import TicketsTable from "./ticketstable"
-import BuyerRequests from "./buyerrequests"
+import HotelReservationsCards from "./hotel-reservations-cards"
+import HotelReservationsTable from "./hotel-reservations-table"
+import DigitalProductReservationsCards from "./digital-products-cards"
+import DigitalProductsTable from "./digital-products-table"
 
 type Props = {
     searchParams: { [key: string]: string | string[] | undefined }
@@ -53,7 +59,6 @@ export default async function DashboardPage({ searchParams }: Props)
         const ticketPrice = typeof curr.price === 'string' ? parseFloat(curr.price) : curr.price
         return acc + (ticketCountry === 'EGP' ? ticketPrice / exchangeRate.USDToEGP : ticketCountry === 'SAR' ? ticketPrice / exchangeRate.USDToSAR : ticketPrice / exchangeRate.USDToAED)
     }, 0)
-    console.log(totalRevenue)
     totalTicketsForSale += bundlesForSale.map((doc) => doc.tickets.length).reduce((acc, curr) => acc + curr, 0)
     totalTicketsOnSale += bundlesForSale.filter((doc) => doc.status === 'onSale').reduce((acc, curr) => acc + curr.tickets.length, 0)
     totalAmountInEscrow += bundlesWithTickets.filter((doc) => doc.status === 'inEscrow').reduce((acc, curr) => {
@@ -63,50 +68,14 @@ export default async function DashboardPage({ searchParams }: Props)
     }, 0)
 
     return (
-        <section className='flex flex-col relative flex-1 items-center justify-start p-12 gap-8 max-h-screen'>
-            <header className='py-4 flex gap-4 items-center justify-center w-full'>
-                <button type="submit" className='rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white font-poppins'>Tickets</button>
-                <button disabled type="submit" className='rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 bg-gradient-to-r opacity-65 bg-white text-black font-poppins'>Digital Products</button>
-                <button disabled type="submit" className='rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 bg-gradient-to-r opacity-65 bg-white text-black font-poppins'>Hotel Reservations</button>
+        <section className='flex flex-col relative flex-1 items-center justify-start p-4 md:p-12 gap-8 md:max-h-screen'>
+            <header className='py-4 flex gap-4 items-center justify-center w-full max-md:flex-col'>
+                <Link href='/dashboard' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', (tab !== 'hotel-reservations' && tab !== 'digital-products') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>Tickets</Link>
+                <Link href='/dashboard?tab=digital-products' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', tab === 'digital-products' ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>Digital Products</Link>
+                <Link href='/dashboard?tab=hotel-reservations' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', tab === 'hotel-reservations' ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>Hotel Reservations</Link>
             </header>
-            <div className='flex flex-wrap gap-8 items-center justify-between w-full'>
-                <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
-                    <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
-                    <div className="flex flex-col text-left items-start justify-center gap-2">
-                        <p className='text-xs text-nowrap font-poppins font-medium'>Total Revenue</p>
-                        <p className='text-md font-poppins font-medium'><FormattedPrice price={totalRevenue} exchangeRate={exchangeRate} /></p>
-                    </div>
-                </div>
-                <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
-                    <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
-                    <div className="flex flex-col text-left items-start justify-center gap-2">
-                        <p className='text-xs text-nowrap font-poppins font-medium'>Total Sales</p>
-                        <p className='text-md font-poppins font-medium'>{totalTicketsSold} <span className='text-[#666666]'>tickets</span></p>
-                    </div>
-                </div>
-                <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
-                    <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
-                    <div className="flex flex-col text-left items-start justify-center gap-2">
-                        <p className='text-xs text-nowrap font-poppins font-medium'>Total Tickets</p>
-                        <p className='text-md font-poppins font-medium'>{totalTicketsForSale} <span className='text-[#666666]'>tickets</span></p>
-                    </div>
-                </div>
-                <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
-                    <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
-                    <div className="flex flex-col text-left items-start justify-center gap-2">
-                        <p className='text-xs text-nowrap font-poppins font-medium'>Tickets on sale</p>
-                        <p className='text-md font-poppins font-medium'>{totalTicketsOnSale} <span className='text-[#666666]'>tickets</span></p>
-                    </div>
-                </div>
-                <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
-                    <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
-                    <div className="flex flex-col text-left items-start justify-center gap-2">
-                        <p className='text-xs text-nowrap font-poppins font-medium'>Money in Escrow</p>
-                        <p className='text-md font-poppins font-medium'><FormattedPrice price={totalAmountInEscrow} exchangeRate={exchangeRate} /></p>
-                    </div>
-                </div>
-            </div>
-            {tab === 'tickets' ? <TicketsTable ticketsForSale={ticketsForSale} bundlesForSale={bundlesForSale} search={search} filter={filter} /> : <BuyerRequests />}
+            {tab === 'hotel-reservations' ? <HotelReservationsCards user={user!} exchangeRate={exchangeRate} /> : tab === 'digital-products' ? <DigitalProductReservationsCards exchangeRate={exchangeRate} user={user!} /> : <TicketsCards exchangeRate={exchangeRate} totalAmountInEscrow={totalAmountInEscrow} totalRevenue={totalRevenue} totalTicketsForSale={totalTicketsForSale} totalTicketsOnSale={totalTicketsOnSale} totalTicketsSold={totalTicketsSold} />}
+            {tab === 'requests' ? <BuyerRequests /> : tab === 'hotel-reservations' ? <HotelReservationsTable user={user!} exchangeRate={exchangeRate} search={search} filter={filter} /> : tab === 'digital-products' ? <DigitalProductsTable exchangeRate={exchangeRate} user={user!} search={search} filter={filter} /> : <TicketsTable ticketsForSale={ticketsForSale} bundlesForSale={bundlesForSale} search={search} filter={filter} />}
         </section>
     )
 }

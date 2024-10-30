@@ -69,7 +69,7 @@ export default function SearchBar({ locale }: Props)
     }
 
     return (
-        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className='relative w-full max-w-[647px] bg-white flex shadow-lg z-[999999] gap-4 rounded-md items-center justify-evenly px-4 mt-12'>
+        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className='relative w-full max-w-[647px] bg-white flex shadow-lg z-[9] gap-4 rounded-md items-center justify-evenly px-4 mt-12'>
             <Image
                 src='/assets/searchIcon.svg'
                 width={24}
