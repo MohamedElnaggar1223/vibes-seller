@@ -31,7 +31,7 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-  title: "Vibes",
+  title: "Whim Zee - Seller",
   description: "Buy and sell your tickets online",
   openGraph: {
     images: 'https://firebasestorage.googleapis.com/v0/b/test-2cf5b.appspot.com/o/play_store_512.png?alt=media&token=a5f145ce-53c4-48af-a75e-26f81067cd87'
@@ -83,8 +83,9 @@ export default async function RootLayout({
         <TranslationsProvider locale={params.locale!} resources={resources} namespaces={['homepage', 'common', 'auth']}>
           <CountryContextProvider>
             <main className='min-h-screen flex'>
-              <SideBar />
+              {params.locale !== 'ar' && <SideBar params={params} />}
               {children}
+              {params.locale === 'ar' && <SideBar params={params} />}
               <SpeedInsights />
             </main>
             <Footer params={params} />

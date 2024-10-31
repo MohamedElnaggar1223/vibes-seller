@@ -1,4 +1,4 @@
-import { formatTime, getEvent, initTranslations, toArabicTime } from "@/lib/utils";
+import { formatTime, getEvent, initTranslations, toArabicNums, toArabicTime } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import ClientDates from "./clientdates";
@@ -33,7 +33,7 @@ export default async function EventPage({ params }: Props)
                         loading="lazy"
                     />
                 </div>
-                <div className='flex flex-col gap-4 items-start justify-center'>
+                <div dir={params.locale === 'ar' ? 'rtl' : 'ltr'} className='flex flex-col gap-4 items-start justify-center'>
                     <h1 className='font-poppins text-lg lg:text-2xl font-bold text-white'>{params.locale === 'ar' ? event?.nameArabic : event?.name}</h1>
                     <div className='flex flex-col gap-3'>
                         <div className='w-full flex justify-between items-center gap-2'>
@@ -45,14 +45,14 @@ export default async function EventPage({ params }: Props)
                         <p className='font-poppins text-md lg:text-base font-extralight text-white'>{event?.gatesOpen && `${t('gatesOpen')} ${params.locale === 'ar' ? toArabicTime(formatTime(event?.gatesOpen)) : formatTime(event?.gatesOpen)}`} {event?.gatesClose && `| ${t('gatesClose')} ${params.locale === 'ar' ? toArabicTime(formatTime(event?.gatesClose)) : formatTime(event?.gatesClose)}`}</p>
                     </div>
                     <div className='flex flex-col gap-2'>
-                        <p className='font-poppins text-xs lg:text-md font-normal text-white'>{event?.tickets?.length ?? 0} Tickets categories</p>
-                        {event?.parkingPass && <p className='font-poppins text-xs lg:text-md font-normal text-white'>Parking Pass Available</p>}
+                        <p className='font-poppins text-xs lg:text-md font-normal text-white'>{params.locale === 'ar' ? toArabicNums(event?.tickets?.length?.toString() ?? '0') : event?.tickets.length} {t("ticketsCategories")}</p>
+                        {event?.parkingPass && <p className='font-poppins text-xs lg:text-md font-normal text-white'>{t("parkingPassAvailable")}</p>}
                     </div>
                 </div>
             </div>
             {/* <Suspense fallback={<Loader2 size={52} className='animate-spin' />}> */}
             <Suspense fallback={<UserTicketsLoading />}>
-                <UserTickets eventId={params.id} />
+                <UserTickets eventId={params.id} locale={params.locale} />
             </Suspense>
         </section>
     )

@@ -2,14 +2,17 @@ import { getUser } from "@/app/[locale]/(root)/layout"
 import { initAdmin } from "@/firebase/server/config"
 import { TicketType } from "@/lib/types/ticketTypes"
 import UserTicketsTable from "./UserTicketsTable"
-import { getEvent } from "@/lib/utils"
+import { getEvent, initTranslations, toArabicNums } from "@/lib/utils"
 
 type Props = {
     eventId: string
+    locale?: string | undefined
 }
 
-export default async function UserTickets({ eventId }: Props)
+export default async function UserTickets({ eventId, locale }: Props)
 {
+    const { t } = await initTranslations(locale!, ['homepage', 'common'])
+
     const user = await getUser()
 
     const admin = await initAdmin()
@@ -26,14 +29,14 @@ export default async function UserTickets({ eventId }: Props)
     const userEventTickets = finalUserTickets?.filter((ticket) => ticket?.eventId === eventId && !ticket.forSale)
 
     return (
-        <div className='relative flex flex-col gap-4 w-full'>
+        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className='relative flex flex-col gap-4 w-full'>
             {userEventTickets.length > 0 && (
                 <div className='flex px-4 items-center justify-between'>
-                    <p className='font-poppins text-xs lg:text-md font-extralight text-white'>Please Select the tickets you want to sell</p>
-                    <p className='font-poppins text-xs lg:text-md font-normal text-white'>Showing a total of ({userEventTickets?.length}) Tickets</p>
+                    <p className='font-poppins text-xs lg:text-md font-extralight text-white'>{t("pleaseSelect")}</p>
+                    <p className='font-poppins text-xs lg:text-md font-normal text-white'>{t("showingTotal")} ({locale === 'ar' ? toArabicNums(userEventTickets?.length.toString() ?? '0') : userEventTickets?.length}) {t("tickets")}</p>
                 </div>
             )}
-            <UserTicketsTable user={user!} tickets={userEventTickets} event={event!} />
+            <UserTicketsTable user={user!} tickets={userEventTickets} event={event!} locale={locale} />
         </div>
     )
 }

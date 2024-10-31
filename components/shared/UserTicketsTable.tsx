@@ -7,7 +7,7 @@ import { Checkbox } from "../ui/checkbox"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import Image from "next/image"
 import TicketPrice from "./TicketPrice"
-import { cn } from "@/lib/utils"
+import { cn, toArabicNums } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { addDoc, collection, doc, runTransaction, Timestamp } from "firebase/firestore"
 import { db, storage } from "@/firebase/client/config"
@@ -17,11 +17,13 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { updateRoute } from "@/lib/actions/tickets"
 import { UserType } from "@/lib/types/userTypes"
 import { CountryContext } from "@/providers/CountryProvider"
+import { useTranslation } from "react-i18next"
 
 type Props = {
     tickets: TicketType[]
     user: UserType
     event: EventType
+    locale?: string | undefined
 }
 
 type UploadedTicket = {
@@ -32,13 +34,15 @@ type UploadedTicket = {
     }
 }[]
 
-export default function UserTicketsTable({ tickets, user, event }: Props) 
+export default function UserTicketsTable({ tickets, user, event, locale }: Props) 
 {
     const context = useContext(CountryContext)
     if(!context) return <Loader2 className='animate-spin' />
     const { country } = context
 
     const router = useRouter()
+
+    const { t } = useTranslation()
 
     const ticketsGroups = useMemo(() => {
         let ticketsCategories: { [key: string]: TicketType[] } = {}
@@ -189,6 +193,14 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
         await updateRoute(`/${event.id}`)
     }
 
+    const arabicTicketNames = useMemo(() => {
+        let tickets = {} as { [key: string]: string }
+        Object.keys(ticketsGroups).forEach(key => {
+            tickets = {...tickets, [key]: event.tickets.find(t => t.name === key)?.nameArabic ?? key}
+        })
+        return tickets
+    }, [event, ticketsGroups])
+
     return (
         <div className='flex flex-col gap-4 w-full'>
             {tickets.length > 0 ? (
@@ -198,9 +210,9 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                             <AccordionItem key={key} value={key} className="border-0">
                                 <AccordionTrigger className='p-4 bg-black'>
                                     <p className='font-poppins text-sm lg:text-base font-normal text-white'>
-                                        ({ticketsArray.length}) {key}
+                                        ({locale === 'ar' ? toArabicNums(ticketsArray?.length.toString() ?? '0') : ticketsArray?.length}) {locale === 'ar' ? arabicTicketNames[key] : key}
                                     </p>
-                                    <div onClick={(e) => e.stopPropagation()} className="flex items-center space-x-2 ml-auto">
+                                    <div onClick={(e) => e.stopPropagation()} className={cn("flex items-center space-x-2", locale === 'ar' ? 'mr-auto' : 'ml-auto')}>
                                         <Checkbox 
                                             checked={ticketsSelect[key]?.length === ticketsArray.length} 
                                             onCheckedChange={() => setTicketsSelect(prev => ({ ...prev, [key]: prev[key]?.length === ticketsArray.length ? [] : ticketsArray }))}
@@ -211,7 +223,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                             htmlFor="selectAll"
                                             className="text-sm lg:text-base font-poppins text-white font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
-                                            Select All
+                                            {t("selectAll")}
                                         </label>
                                     </div>
                                 </AccordionTrigger>
@@ -230,7 +242,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                                         htmlFor={ticket.id}
                                                         className="text-base font-normal font-poppins leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                                     >
-                                                        {Object.keys(ticket.tickets)[0]}
+                                                        {locale === 'ar' ? arabicTicketNames[Object.keys(ticket.tickets)[0]] : Object.keys(ticket.tickets)[0]}
                                                     </label>
                                                 </div>
                                             </div>
@@ -244,27 +256,27 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                             <div className='flex items-center justify-between pb-4'>
                                 {event.uploadedTickets && (
                                     <div className='flex flex-col gap-1'>
-                                        <p className='font-poppins text-xs font-light text-white'>Have other tickets?</p>
-                                        <button onMouseDown={() => setAddTicketsOpen(true)} className='px-10 py-3 bg-white rounded-sm text-black font-poppins text-xs font-medium'>Add ticket</button>
+                                        <p className='font-poppins text-xs font-light text-white'>{t("haveOtherTickets")}</p>
+                                        <button onMouseDown={() => setAddTicketsOpen(true)} className='px-10 py-3 bg-white rounded-sm text-black font-poppins text-xs font-medium'>{t("addTicket")}</button>
                                     </div>
                                 )}
-                                <div className='flex flex-col gap-1 items-center justify-center ml-auto'>
-                                    <p className='font-poppins text-xs lg:text-sm font-extralight text-white'>({ticketsNumber}) Tickets Selected</p>
-                                    <button disabled={ticketsNumber === 0} onMouseDown={() => setConfirmedTickets(true)} className='px-8 py-4 disabled:opacity-65 bg-white rounded-sm text-black font-poppins text-xs lg:text-sm font-medium'>Confirm Selection</button>
+                                <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className='flex flex-col gap-1 items-center justify-center ml-auto'>
+                                    <p className='font-poppins text-xs lg:text-sm font-extralight text-white'>({locale === 'ar' ? toArabicNums(ticketsNumber.toString()) : ticketsNumber}) {t("ticketsSelected")}</p>
+                                    <button disabled={ticketsNumber === 0} onMouseDown={() => setConfirmedTickets(true)} className='px-8 py-4 disabled:opacity-65 bg-white rounded-sm text-black font-poppins text-xs lg:text-sm font-medium'>{t("confirmSelection")}</button>
                                 </div>
                             </div>
                         </div>
                 </>
             ) : (
                 <div className='flex flex-col items-center justify-center w-full gap-4'>
-                    <p className='font-poppins text-xs text-white'>Start adding tickets & putting them up for sale!</p>
-                    <button onMouseDown={() => setAddTicketsOpen(true)} className='px-10 py-3 bg-white rounded-sm text-black font-poppins text-xs font-medium'>Add Tickets</button>
+                    <p className='font-poppins text-xs text-white'>{t("startAdding")}</p>
+                    <button onMouseDown={() => setAddTicketsOpen(true)} className='px-10 py-3 bg-white rounded-sm text-black font-poppins text-xs font-medium'>{t("addTickets")}</button>
                 </div>
             )}
             <Dialog open={confirmedTickets} onOpenChange={setConfirmedTickets}>
                 <DialogContent className="sm:max-w-[512px] gap-8">
                     <DialogHeader className='flex items-center justify-center'>
-                        <DialogTitle className='font-bold'>Do you want to sell ({ticketsNumber}) tickets as</DialogTitle>
+                        <DialogTitle className='font-bold'>{t("doSell")} ({ticketsNumber}) {t("ticketsAs")}</DialogTitle>
                     </DialogHeader>
                     <div className='flex flex-col items-start justify-center gap-4 w-screen max-w-[248px] mx-auto'>
                         <div className='flex items-center gap-4 w-full'>
@@ -278,7 +290,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                 htmlFor='individual'
                                 className="text-base font-semibold font-poppins leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                                Individual Tickets
+                                {t("individual")}
                             </label>
                         </div>
                         <div className='flex items-center gap-4 w-full'>
@@ -292,7 +304,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                 htmlFor='bundle'
                                 className="text-base font-semibold font-poppins leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                                Bundle
+                                {t("bundle")}
                             </label>
                         </div>
                     </div>
@@ -305,7 +317,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                             disabled={!sellingType} 
                             className='px-10 py-4 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
                         >
-                            Confirm
+                            {t("confirm")}
                         </button>
                     </DialogFooter>
                 </DialogContent>
@@ -314,7 +326,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                 <DialogContent>
                     <DialogHeader className='flex items-center justify-center gap-2'>
                         <h2 className="text-base font-semibold font-poppins leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Please set price for ({ticketsNumber}) tickets
+                            {t("setPrice")} ({locale === 'ar' ? toArabicNums(ticketsNumber.toString()) : ticketsNumber}) {t("tickets")}
                         </h2>
                         <div className='flex gap-1 items-start justify-center'>
                             <Image
@@ -324,8 +336,9 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                 height={17} 
                             />
                             <p className='font-poppins font-normal text-sm text-center'>
-                                Tip : we recommend you half the ticket/bundle price as this <br />
-                                will increase the chances of being sold!
+                                {t("tipHalf1")}
+                                <br/>
+                                {t("tipHalf2")}
                             </p>
                         </div>
                     </DialogHeader>
@@ -333,15 +346,15 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                         <div className='flex flex-col gap-4'>
                             {unifyPrice ? (
                                 <p onClick={() => {setUnifyPrice(false); setTicketsSelectedWithPrice(prev => prev.map(ticket => ({...ticket, salePrice: ''})))}} className={cn('ml-auto underline font-poppins font-normal text-base text-center cursor-pointer unify-price')}>
-                                    Cancel Unify Price
+                                    {t("cancelUnify")}
                                 </p>
                             ) : (
                                 <p onClick={() => {setUnifyPrice(true); setUnifyPriceOpen(true)}} className={cn('ml-auto underline font-poppins font-normal text-base text-center cursor-pointer')}>
-                                    Unify Price
+                                    {t("unifyPrice")}
                                 </p>
                             ) }
                             <div className='flex flex-col w-full gap-2 max-h-[480px] overflow-auto'>
-                                {ticketsSelectedWithPrice.map((ticket, index) => <TicketPrice index={index} key={ticket.id} ticket={ticket} setTicketsSelectedWithPrice={setTicketsSelectedWithPrice} />)}
+                                {ticketsSelectedWithPrice.map((ticket, index) => <TicketPrice locale={locale} arabicTicketNames={arabicTicketNames} index={index} key={ticket.id} ticket={ticket} setTicketsSelectedWithPrice={setTicketsSelectedWithPrice} />)}
                             </div>
                             <div className='w-full mt-8 flex items-center justify-center gap-2'>
                                 <button 
@@ -350,14 +363,14 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                     }} 
                                     className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
                                 >
-                                    Cancel
+                                    {t("cancel")}
                                 </button>
                                 <button 
                                     disabled={ticketsSelectedWithPrice.find(ticket => !ticket.salePrice) !== undefined} 
                                     onClick={() => setAgreeToTerms(true)}
                                     className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
                                 >
-                                    Sell Tickets
+                                    {t("sellTickets")}
                                 </button>
                             </div>
                         </div>
@@ -365,15 +378,15 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                         <div className='flex flex-col gap-4'>
                             <div className='flex flex-col w-full gap-2 max-h-[480px] overflow-auto'>
                                 <div className='flex pl-6 pr-12 py-1 items-center justify-between bg-black w-full'>
-                                    <p className='font-poppins font-semibold text-base w-20 text-center text-white'>Bundle</p>
-                                    <p className='font-poppins text-sm w-20 text-center text-white'>Bundle Price</p>
+                                    <p className='font-poppins font-semibold text-base w-20 text-center text-white'>{t("bundle")}</p>
+                                    <p className='font-poppins text-sm w-20 text-center text-white text-nowrap'>{t("bundlePrice")}</p>
                                 </div>
                                 <div className='flex w-full gap-2 px-2 relative'>
                                     <div className='flex flex-1 flex-col items-start justify-start gap-2'>
                                         {ticketsSelectedWithPrice.map((ticket, index) => (
                                             <div className="flex gap-1">
-                                                <p className={cn('rounded-full text-sm h-7 w-7 text-white flex items-center justify-center text-center font-poppins', parseInt(bundlePrice) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'bg-[#D9D9D9]')}>{index + 1}</p>
-                                                <p className='font-poppins text-base w-20 text-center text-black'>{Object.keys(ticket.tickets)[0]}</p>
+                                                <p className={cn('rounded-full text-sm h-7 w-7 text-white flex items-center justify-center text-center font-poppins', parseInt(bundlePrice) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'bg-[#D9D9D9]')}>{locale === 'ar' ? toArabicNums((index + 1).toString()) : index + 1}</p>
+                                                <p className='font-poppins text-base w-20 text-center text-black'>{locale === 'ar' ? arabicTicketNames[Object.keys(ticket.tickets)[0]] : Object.keys(ticket.tickets)[0]}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -389,14 +402,14 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                     }} 
                                     className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
                                 >
-                                    Cancel
+                                    {t("cancel")}
                                 </button>
                                 <button 
                                     disabled={!bundlePrice} 
                                     onClick={() => setAgreeToTerms(true)}
                                     className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
                                 >
-                                    Sell Bundle
+                                    {t("sellBundle")}
                                 </button>
                             </div>
                         </div>
@@ -407,7 +420,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                 <DialogContent>
                     <DialogHeader className='flex items-center justify-center gap-2'>
                         <h2 className="text-base font-semibold font-poppins leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Please set price for ({ticketsNumber}) tickets
+                            {t("setPrice")} ({ticketsNumber}) {t("tickets")}
                         </h2>
                         <div className='flex gap-1 items-start justify-center'>
                             <Image
@@ -417,8 +430,9 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                                 height={17} 
                             />
                             <p className='font-poppins font-normal text-sm text-center'>
-                                Tip : we recommend you half the ticket/bundle price as this <br />
-                                will increase the chances of being sold!
+                                {t("tipHalf1")}
+                                <br />
+                                {t("tipHalf2")}
                             </p>
                         </div>
                     </DialogHeader>
@@ -431,14 +445,14 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                         }} 
                         className='px-10 py-4 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
                     >
-                        Confirm Price
+                        {t("confirmPrice")}
                     </button>
                 </DialogContent>
             </Dialog>
             <Dialog open={agreeToTerms} onOpenChange={setAgreeToTerms}>
                 <DialogContent className='flex flex-col gap-2 items-center justify-center py-16 px-4 w-screen max-w-[620px]'>
                     <p className='text-center font-poppins text-base'>
-                        Upon agreeing to sell tickets bought from a platform other than Vibes, your money will be held by Vibes and released into your bank account once event ends. Funds usually takes 15-20 days to be released into sellers bank account.
+                        {t("uponAgreeing")}
                     </p>
                     <div className='w-full mt-8 flex items-center justify-center gap-2'>
                         <button 
@@ -448,13 +462,13 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                             }}
                             className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
                         >
-                            Decline
+                            {t("decline")}
                         </button>
                         <button 
                             onClick={handleSellTickets} 
                             className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
                         >
-                            Agree to terms
+                            {t("agreeToTerms")}
                         </button>
                     </div>
                 </DialogContent>
@@ -462,15 +476,15 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
             <Dialog open={addTicketsOpen} onOpenChange={setAddTicketsOpen}>
                 <DialogContent className='flex flex-col gap-4 p-12'>
                     <DialogHeader className='flex items-center justify-center font-bold'>
-                        Please enter ticket details
+                        {t("enterTicketDetails")}
                     </DialogHeader>
                     <div className='flex items-center justify-center relative'>
                         <div className='min-w-[1px] w-[1px] min-h-12 z-10 bg-gray-200 absolute right-[20%] text-white' />
                         <select value={ticketsType} onChange={(e) => setTicketsType(e.target.value)} className='rounded-[6px] w-full bg-white shadow-[0px_0px_4px_2px_rgba(0,0,0,0.15)] py-4 px-6 font-poppins relative text-black outline-none cursor-pointer select-dialog'>
-                            <option value="" className='hidden' disabled selected>Choose Ticket's Category</option>
+                            <option value="" className='hidden' disabled selected>{t("chooseTicketCategory")}</option>
                             {event.tickets.map(ticket => (
                                 <option className='bg-black text-white' key={ticket.name} value={ticket.name}>
-                                    {ticket.name}
+                                    {locale === 'ar' ? ticket.nameArabic : ticket.name}
                                 </option>
                             ))}
                         </select>
@@ -479,7 +493,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                     <div className='flex items-center justify-center relative'>
                         <div className='min-w-[1px] min-h-2 bg-black absolute right-[20%]' />
                         <select value={platform} onChange={(e) => setPlatform(e.target.value)} className='rounded-[6px] w-full bg-white shadow-[0px_0px_4px_2px_rgba(0,0,0,0.15)] py-4 px-6 font-poppins relative text-black outline-none cursor-pointer select-dialog'>
-                            <option value="" className='hidden' disabled selected>Platform</option>
+                            <option value="" className='hidden' disabled selected>{t("platform")}</option>
                             <option className='bg-black text-white' value="Tickets Mall">
                                 Tickets Mall
                             </option>
@@ -507,16 +521,16 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                         )}
                         {uploadedTickets?.length ? (
                             <div className='flex flex-col items-center justify-center'>
-                                <p className='font-light text-sm'>({uploadedTickets.length})</p>
-                                <p className='font-light text-[10px]'>Tickets Uploaded</p>
+                                <p className='font-light text-sm'>({locale === 'ar' ? toArabicNums(uploadedTickets.length.toString()) : uploadedTickets.length})</p>
+                                <p className='font-light text-[10px]'>{t("ticketsUploaded")}</p>
                             </div>
                         ) : (
                             <div className='flex flex-col items-center justify-center'>
-                                <p className='font-light text-xs'>Upload Ticket</p>
+                                <p className='font-light text-xs'>{t("uploadTicket")}</p>
                                 <p className='font-light text-[10px] text-[rgba(0,0,0,0.5)]'>PDF</p>
                             </div>
                         )}
-                        {(uploadedTickets?.length ?? 0) > 0 && <p onClick={(e) => {e.stopPropagation(); setUploadedTickets(null)}} className='text-[rgba(0,0,0,0.5)] absolute top-[70%] right-[5%] underline text-[10px]'>Delete</p>}
+                        {(uploadedTickets?.length ?? 0) > 0 && <p onClick={(e) => {e.stopPropagation(); setUploadedTickets(null)}} className='text-[rgba(0,0,0,0.5)] absolute top-[70%] right-[5%] underline text-[10px]'>{t("delete")}</p>}
                     </div>
                     {event.seated ? (
                         <button 
@@ -524,7 +538,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                             className='px-10 py-4 mt-2 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
                             onClick={() => setAddTicketsSeatsOpen(true)}
                         >
-                            Next
+                            {t("next")}
                         </button>
                     ) : (
                         <button 
@@ -532,7 +546,7 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                             className='px-10 py-4 mt-2 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
                             onClick={handleUploadTickets}
                         >
-                            Add Tickets
+                            {t("addTickets")}
                         </button>
                     )}
                 </DialogContent>    
@@ -540,16 +554,16 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
             <Dialog open={addTicketsSeatsOpen} onOpenChange={setAddTicketsSeatsOpen}>
                 <DialogContent className='flex flex-col gap-4 px-2'>
                     <DialogHeader className='flex items-center justify-center font-bold'>
-                        Please type in the seat , column and row number of ({uploadedTickets?.length}) Tickets
+                        {t("pleaseSeats")} ({uploadedTickets?.length}) {t("tickets")}
                     </DialogHeader>
                     <div className='flex flex-col w-full gap-2 max-h-[480px] overflow-auto'>
                         {Array.from(uploadedTickets ?? []).map((ticket, index) => (
                             <div key={index} className='flex items-center justify-center flex-col gap-2 w-full mb-4'>
                                 <div className='flex pl-6 pr-12 py-1 items-center justify-between bg-black w-full'>
-                                    <p className={cn('rounded-full text-sm h-7 w-7 text-white flex items-center justify-center text-center font-poppins', (ticket.seat.row && ticket.seat.column) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'bg-[#D9D9D9]')}>{index + 1}</p>
+                                    <p className={cn('rounded-full text-sm h-7 w-7 text-white flex items-center justify-center text-center font-poppins', (ticket.seat.row && ticket.seat.column) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'bg-[#D9D9D9]')}>{locale === 'ar' ? toArabicNums((index + 1).toString()) : index + 1}</p>
                                     <div className='flex w-1/2 gap-6'>
-                                        <p className='font-poppins text-sm w-20 text-center text-white text-nowrap'>Row Number</p>
-                                        <p className='font-poppins text-sm w-20 text-center text-white text-nowrap'>Seat Number</p>
+                                        <p className='font-poppins text-sm w-20 text-center text-white text-nowrap'>{t("rowNumber")}</p>
+                                        <p className='font-poppins text-sm w-20 text-center text-white text-nowrap'>{t("seatNumber")}</p>
                                     </div>
                                 </div>
                                 <div className='flex pl-6 pr-12 items-center justify-between w-full'>
@@ -570,14 +584,14 @@ export default function UserTicketsTable({ tickets, user, event }: Props)
                             }} 
                             className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
                         >
-                            Cancel
+                            {t("cancel")}
                         </button>
                         <button 
                             disabled={Array.from(uploadedTickets ?? []).find(ticket => !ticket.ticket || !ticket.seat.column || !ticket.seat.row) !== undefined} 
                             onClick={handleUploadTickets}
                             className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
                         >
-                            Sell Tickets
+                            {t("sellTickets")}
                         </button>
                     </div>
                 </DialogContent>

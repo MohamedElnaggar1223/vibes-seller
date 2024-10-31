@@ -15,13 +15,17 @@ import {
     SheetTrigger,
   } from "@/components/ui/sheet"
 import { useState } from "react";
+import LocaleSwitcher from "./LocaleSwitcher";
+import { useTranslation } from "react-i18next";
 
-export default function SideBar()
+export default function SideBar({ params }: Readonly<{ params: { locale?: string; } }>)
 {
     const router = useRouter()
     const pathname = usePathname()
 
     const [sheetOpen, setSheetOpen] = useState(false)
+
+    const { t } = useTranslation()
 
     return (
         <>
@@ -43,36 +47,39 @@ export default function SideBar()
                                 onClick={() => router.push("/dashboard")} 
                                 className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', pathname?.includes('/dashboard') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}
                             >
-                                <p>Dashboard</p>
+                                <p>{t("dashboard")}</p>
                             </li>
                             <li 
                                 onClick={() => router.push("/digital-products")} 
                                 className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', pathname?.includes('/digital-products') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926]')}
                             >
-                                <p>Digital Products</p>
+                                <p>{t("digitalProducts")}</p>
                             </li>
                             <li 
                                 onClick={() => router.push("/")} 
                                 className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', (!pathname?.includes('/dashboard') && !pathname?.includes('/digital-products') && !pathname?.includes('/hotel-reservations')) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}
                             >
-                                <p>Events</p>
+                                <p>{t("events")}</p>
                             </li>
                             <li 
                                 onClick={() => router.push("/hotel-reservations")} 
                                 className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', pathname?.includes('/hotel-reservations') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}
                             >
-                                <p>Hotel Reservations</p>
+                                <p>{t("hotelReservations")}</p>
                             </li>
                         </ul>
                     </div>
-                    <div className='flex gap-2 items-end pb-8 justify-center w-full flex-1 text-white font-poppins font-light'>
-                        <LogOutIcon />
-                        <LogOut />
+                    <div className="flex flex-col items-center justify-center gap-4 mt-auto">
+                        <LocaleSwitcher params={params} />
+                        <div className='flex gap-2 items-end pb-8 justify-center w-full flex-1 text-white font-poppins font-light'>
+                            <LogOutIcon />
+                            <LogOut />
+                        </div>
                     </div>
                 </div>
             </aside>
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetTrigger className="lg:hidden ml-4 mt-4" asChild>
+                <SheetTrigger className="lg:hidden ml-4 mt-4 absolute z-[10]" asChild>
                     <MenuIcon stroke='#fff' />
                 </SheetTrigger>
                 <SheetContent side='left' className='block lg:hidden w-[320px] h-screen bg-[#000] shadow-lg min-h-screen'>
@@ -94,31 +101,34 @@ export default function SideBar()
                                         onClick={() => {router.push("/dashboard"); setSheetOpen(false)}} 
                                         className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', pathname?.includes('/dashboard') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}
                                     >
-                                        <p>Dashboard</p>
+                                        <p>{t("dashboard")}</p>
                                     </li>
                                     <li 
                                         onClick={() => {router.push("/digital-products"); setSheetOpen(false)}} 
                                         className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', pathname?.includes('/digital-products') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926]')}
                                     >
-                                        <p>Digital Products</p>
+                                        <p>{t("digitalProducts")}</p>
                                     </li>
                                     <li 
                                         onClick={() => {router.push("/"); setSheetOpen(false)}} 
                                         className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', (!pathname?.includes('/dashboard') && !pathname?.includes('/digital-products') && !pathname?.includes('/hotel-reservations')) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}
                                     >
-                                        <p>Events</p>
+                                        <p>{t("events")}</p>
                                     </li>
                                     <li 
                                         onClick={() => {router.push("/hotel-reservations"); setSheetOpen(false)}} 
                                         className={cn('flex items-center cursor-pointer justify-center text-lg font-poppins font-light w-full py-4 text-white px-4', pathname?.includes('/hotel-reservations') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'hover:bg-[#1d1926] ')}
                                     >
-                                        <p>Hotel Reservations</p>
+                                        <p>{t("hotelReservations")}</p>
                                     </li>
                                 </ul>
                             </div>
-                            <div onClick={() => setSheetOpen(false)} className='flex gap-2 items-end pb-8 justify-center w-full flex-1 text-white font-poppins font-light'>
-                                <LogOutIcon />
-                                <LogOut />
+                            <div className="flex flex-col items-center justify-center gap-4 mt-auto">
+                                <LocaleSwitcher params={params} />
+                                <div onClick={() => setSheetOpen(false)} className='flex gap-2 items-end pb-8 justify-center w-full flex-1 text-white font-poppins font-light'>
+                                    <LogOutIcon />
+                                    <LogOut />
+                                </div>
                             </div>
                         </div>
                     {/* </aside> */}
