@@ -10,11 +10,12 @@ import { ExchangeRate } from "@/lib/types/eventTypes"
 type Props = {
     user: UserType
     exchangeRate: ExchangeRate
+    locale: string | undefined
     search?: string
     filter?: string
 }
 
-export default async function HotelReservationsTable({ search, filter, user, exchangeRate }: Props)
+export default async function HotelReservationsTable({ search, filter, user, exchangeRate, locale }: Props)
 {
     const admin = await initAdmin()
     
@@ -33,12 +34,12 @@ export default async function HotelReservationsTable({ search, filter, user, exc
             <div className="flex w-full overflow-auto">
                 <div className='flex flex-col gap-2 w-full flex-1 overflow-auto relative min-w-[960px]'>
                     <div className='flex w-full sticky top-0 items-center justify-between bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-lg'>
-                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>Hotel</div>
-                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>Room & Board Type</div>
-                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>Check In-Check Out</div>
-                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>Itenirary Number</div>
-                        <div className='flex-[0.45] py-6 font-medium text-xs text-white text-center font-poppins'>Price</div>
-                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>Status</div>
+                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>{locale === 'ar' ? "الفندق" : 'Hotel'}</div>
+                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>{locale === 'ar' ? "نوع الغرفة" : 'Room & Board Type'}</div>
+                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>{locale === 'ar' ? "الدخول - الخروج" : 'Check In-Check Out'}</div>
+                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>{locale === 'ar' ? "رقم المقعد" : 'Itenirary Number'}</div>
+                        <div className='flex-[0.45] py-6 font-medium text-xs text-white text-center font-poppins'>{locale === 'ar' ? "السعر" : 'Price'}</div>
+                        <div className='flex-1 py-6 font-medium text-xs text-white text-center font-poppins'>{locale === 'ar' ? "الحالة" : 'Status'}</div>
                     </div>
                     <div className='flex flex-col gap-2 w-full'>
                         {userHotelsListings.map(hotel => <HotelRowContainer exchangeRate={exchangeRate} key={hotel.id} hotel={hotel} search={search} filter={filter} />)}

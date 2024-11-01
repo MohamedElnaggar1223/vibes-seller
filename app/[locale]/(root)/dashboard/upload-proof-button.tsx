@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 type Props = {
     ticket?: TicketType 
@@ -18,6 +19,8 @@ type Props = {
 export default function UploadProofButton({ ticket, bundle }: Props)
 {
     const router = useRouter()
+
+    const { t } = useTranslation()
 
     const [loading, setLoading] = useState(false)
 
@@ -58,9 +61,9 @@ export default function UploadProofButton({ ticket, bundle }: Props)
     return (
         <>
             {(ticket && ticket.proofPath) ? (
-                <p className='font-poppins text-[#E72377]'>Under Review</p>
+                <p className='font-poppins text-[#E72377]'>{t("underReview")}</p>
             ) : (bundle && bundle.proofPath) ? (
-                <p className='font-poppins text-[#E72377]'>Under Review</p>
+                <p className='font-poppins text-[#E72377]'>{t("underReview")}</p>
             ) : (
                 <button onClick={() => fileInputRef.current?.click()} className='px-1 py-2 bg-black gap-2 mt-auto text-xs font-light text-white text-nowrap flex items-center justify-center rounded-[8px]'>
                     <input onChange={handleUploadProofPdf} className='hidden absolute w-full h-full' type='file' multiple accept=".pdf" ref={fileInputRef} />
@@ -70,7 +73,7 @@ export default function UploadProofButton({ ticket, bundle }: Props)
                         height={17}
                         alt='upload' 
                     />
-                    Upload Proof
+                    {t("uploadProof")}
                 </button>
             )}
             <Dialog open={loading}>

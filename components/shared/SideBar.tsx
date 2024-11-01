@@ -33,9 +33,9 @@ export default function SideBar({ params }: Readonly<{ params: { locale?: string
                 <div className='flex flex-col items-center w-full min-h-full'>
                     <div className='flex items-center justify-center w-full py-16 text-white'>
                         <Image
-                            src="/assets/logo.png"
-                            width={209}
-                            height={78}
+                            src="/assets/logoWhite.png"
+                            width={150}
+                            height={50}
                             alt="logo"
                             className='cursor-pointer max-lg:w-[120px] max-lg:h-[45px]'
                             priority
@@ -87,7 +87,7 @@ export default function SideBar({ params }: Readonly<{ params: { locale?: string
                         <div className='flex flex-col items-center w-full min-h-full'>
                             <div className='flex items-center justify-center w-full py-16 text-white'>
                                 <Image
-                                    src="/assets/logo.png"
+                                    src="/assets/logoWhite.png"
                                     width={209}
                                     height={78}
                                     alt="logo"

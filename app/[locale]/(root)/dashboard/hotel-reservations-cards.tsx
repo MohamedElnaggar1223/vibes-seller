@@ -7,9 +7,10 @@ import { UserType } from "@/lib/types/userTypes";
 type Props = {
     exchangeRate: ExchangeRate
     user: UserType
+    locale: string | undefined
 }
 
-export default async function HotelReservationsCards({ exchangeRate, user }: Props) 
+export default async function HotelReservationsCards({ exchangeRate, user, locale }: Props) 
 {
     const admin = await initAdmin()
     
@@ -36,29 +37,29 @@ export default async function HotelReservationsCards({ exchangeRate, user }: Pro
             <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
                 <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
                 <div className="flex flex-col text-left items-start justify-center gap-2">
-                    <p className='text-xs text-nowrap font-poppins font-medium'>Total Revenue</p>
+                    <p className='text-xs text-nowrap font-poppins font-medium'>{locale === 'ar' ? "إجمالي الإيرادات" : 'Total Revenue'}</p>
                     <p className='text-md font-poppins font-medium'><FormattedPrice price={totalRevenue} exchangeRate={exchangeRate} /></p>
                 </div>
             </div>
             <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
                 <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
                 <div className="flex flex-col text-left items-start justify-center gap-2">
-                    <p className='text-xs text-nowrap font-poppins font-medium'>Total Sales</p>
-                    <p className='text-md font-poppins font-medium'>{totalHotelsSold} <span className='text-[#666666]'>sales</span></p>
+                    <p className='text-xs text-nowrap font-poppins font-medium'>{locale === 'ar' ? "إجمالي المبيعات" : 'Total Sales'}</p>
+                    <p className='text-md font-poppins font-medium'>{totalHotelsSold} <span className='text-[#666666]'>{locale === 'ar' ? "مبيعات" : 'sales'}</span></p>
                 </div>
             </div>
             <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
                 <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
                 <div className="flex flex-col text-left items-start justify-center gap-2">
-                    <p className='text-xs text-nowrap font-poppins font-medium'>Listings on Sale</p>
-                    <p className='text-md font-poppins font-medium'>{totalHotelsOnSale} <span className='text-[#666666]'>listings</span></p>
+                    <p className='text-xs text-nowrap font-poppins font-medium'>{locale === 'ar' ? "المبيعات المشترية" : 'Listings on Sale'}</p>
+                    <p className='text-md font-poppins font-medium'>{totalHotelsOnSale} <span className='text-[#666666]'>{locale === 'ar' ? "قوائم" : 'listings'}</span></p>
                 </div>
             </div>
             <div className="flex items-center justify-start pl-4 pr-2 py-1 bg-white gap-4 rounded-[10px] w-[160px] h-[71px]">
                 <div className='h-full w-[4px] rounded-3xl bg-gradient-to-b from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' />
                 <div className="flex flex-col text-left items-start justify-center gap-2">
-                    <p className='text-xs text-nowrap font-poppins font-medium'>Total Listings</p>
-                    <p className='text-md font-poppins font-medium'>{totalHotels} <span className='text-[#666666]'>listings</span></p>
+                    <p className='text-xs text-nowrap font-poppins font-medium'>{locale === 'ar' ? "إجمالي القوائم" : 'Total Listings'}</p>
+                    <p className='text-md font-poppins font-medium'>{totalHotels} <span className='text-[#666666]'>{locale === 'ar' ? "قوائم" : 'listings'}</span></p>
                 </div>
             </div>
         </div>

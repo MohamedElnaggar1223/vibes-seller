@@ -6,6 +6,7 @@ type Props = {
     ticket: TicketOrBundle
     search: string | undefined
     filter: string | undefined
+    locale: string | undefined
     // ticket: ItemType<{ type: 'individual' | 'bundle' }>
 }
 
@@ -17,7 +18,7 @@ export function isBundle(item: TicketOrBundle): item is Bundle & { type: 'bundle
     return item.type === 'bundle'
 }
 
-export default async function TicketRowContainer({ ticket, search, filter }: Props) 
+export default async function TicketRowContainer({ ticket, search, filter, locale }: Props) 
 {
     const event = await getEvent(ticket.eventId)
 
@@ -32,5 +33,5 @@ export default async function TicketRowContainer({ ticket, search, filter }: Pro
         return {...ticketData, type: 'individual'}
     }))
 
-    return <TicketRow event={event} ticket={ticket} bundleTickets={bundleTickets} />
+    return <TicketRow event={event} ticket={ticket} bundleTickets={bundleTickets} locale={locale} />
 }

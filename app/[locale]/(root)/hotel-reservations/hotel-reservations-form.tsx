@@ -78,7 +78,7 @@ const hotelReservationSchema = z.object({
     })
 })
 
-export default function HotelReservationsForm({ user }: { user: UserType })
+export default function HotelReservationsForm({ user, locale }: { user: UserType, locale: string | undefined })
 {
     const context = useContext(CountryContext)
     if(!context) return <Loader2 className='animate-spin' />
@@ -181,30 +181,30 @@ export default function HotelReservationsForm({ user }: { user: UserType })
     }
 
     return (
-        <div className='lg:w-screen lg:max-w-[720px] flex flex-col rounded-[20px] overflow-hidden'>
+        <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className='lg:w-screen lg:max-w-[720px] flex flex-col rounded-[20px] overflow-hidden'>
             <div className='flex items-center justify-center w-full bg-black pb-4 pt-6 lg:px-4 divide-x !divide-[#808080]'>
                 <div className={cn('flex flex-1 items-center justify-center gap-2', (tab === 'booking-details' || tab === 'verification') && 'max-lg:hidden')}>
                     <span className={cn('font-extrabold', (tab === 'hotel-details' || !tab) ? 'unify-price text-xl lg:text-3xl -mt-2.5' : 'text-[#00CB20] text-xl ')}>
-                        01 
+                        {locale === 'ar' ? "٠١" : '01'}
                     </span>
                     <span className={cn('font-semibold', (tab === 'hotel-details' || !tab) ? 'text-white text-xs lg:text-sm' : 'text-[#00CB20] text-xs')}>
-                        Hotel Details
+                        {locale === 'ar' ? "تفاصيل الفندق" : 'Hotel Details'}
                     </span>
                 </div>
                 <div className={cn('flex flex-1 items-center justify-center gap-2', (tab === 'hotel-details' || tab === 'verification') && 'max-lg:hidden')}>
                     <span className={cn('font-extrabold', (tab === 'booking-details' || !tab) ? 'unify-price text-xl lg:text-3xl -mt-2.5' : tab === 'hotel-details' ? 'text-[#CCCCCC] text-xl ' : 'text-[#00CB20] text-xl ')}>
-                        02 
+                        {locale === 'ar' ? "٠٢" : '02'}
                     </span>
                     <span className={cn('font-semibold', (tab === 'booking-details') ? 'text-white text-xs lg:text-sm' : tab === 'hotel-details' ? 'text-[#808080] text-xs' : 'text-[#00CB20] text-xs ')}>
-                        Booking Details
+                        {locale === 'ar' ? "تفاصيل المشتري" : 'Booking Details'}
                     </span>
                 </div>
                 <div className={cn('flex flex-1 items-center justify-center gap-2', (tab === 'booking-details' || tab === 'hotel-details') && 'max-lg:hidden')}>
                     <span className={cn('font-extrabold', (tab === 'verification' || !tab) ? 'unify-price text-xl lg:text-3xl -mt-2.5' : 'text-[#CCCCCC] text-xl ')}>
-                        03
+                        {locale === 'ar' ? "٠٣" : '03'}
                     </span>
                     <span className={cn('font-semibold', (tab === 'verification') ? 'text-white text-xs lg:text-sm' : 'text-[#808080] text-xs')}>
-                        Verification
+                        {locale === 'ar' ? "التحقق من المعاملة" : 'Verification'}
                     </span>
                 </div>
             </div>
@@ -218,7 +218,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                 <FormItem className={cn("", tab !== 'hotel-details' && 'hidden absolute')}>
                                     <FormControl>
                                         <input 
-                                            placeholder='Hotel Name' 
+                                            placeholder={locale === 'ar' ? "اسم الفندق" : 'Hotel Name'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
                                         />
@@ -234,7 +234,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                 <FormItem className={cn("", tab !== 'hotel-details' && 'hidden absolute')}>
                                     <FormControl>
                                         <input 
-                                            placeholder='Hotel Website Link (Optional)' 
+                                            placeholder={locale === 'ar' ? "رابط الفندق على الويب (اختياري)" : 'Hotel Website Link (Optional)'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
                                         />
@@ -251,7 +251,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Address' 
+                                                placeholder={locale === 'ar' ? "العنوان" : 'Address'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full outline-none rounded-md'
                                                 {...field}
                                             />
@@ -267,7 +267,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Zip Code' 
+                                                placeholder={locale === 'ar' ? "الرمز البريدي" : 'Zip Code'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full lg:max-w-[160px] outline-none rounded-md'
                                                 {...field}
                                             />
@@ -285,7 +285,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Room Type' 
+                                                placeholder={locale === 'ar' ? "نوع الغرفة" : 'Room Type'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             />
@@ -301,7 +301,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Board Type' 
+                                                placeholder={locale === 'ar' ? "نوع اللوح" : 'Board Type'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             />
@@ -316,7 +316,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                             name="date"
                             render={({ field }) => (
                                 <FormItem className={cn("", tab !== 'hotel-details' && 'hidden absolute')}>
-                                    <FormLabel className='font-poppins text-[#00000080] text-base font-normal'>Check In - Check Out</FormLabel>
+                                    <FormLabel className='font-poppins text-[#00000080] text-base font-normal'>{locale === 'ar' ? "الدخول - الخروج" : 'Check In - Check Out'}</FormLabel>
                                     <FormControl>
                                         <div className={cn("grid gap-2")}>
                                             <Popover>
@@ -340,7 +340,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                                         format(field.value.from, "LLL dd, y")
                                                     )
                                                     ) : (
-                                                    <span>Pick a date</span>
+                                                    <span>{locale === 'ar' ? "اختر تاريخا" : 'Pick a date'}</span>
                                                     )}
                                                 </Button>
                                                 </PopoverTrigger>
@@ -372,7 +372,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Adults' 
+                                                placeholder={locale === 'ar' ? "الافراد" : 'Adults'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                                 onChange={(e) => {
@@ -391,7 +391,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Children' 
+                                                placeholder={locale === 'ar' ? "الأطفال" : 'Children'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                                 onChange={(e) => {
@@ -413,7 +413,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                 <FormItem className={cn("", tab !== 'booking-details' && 'hidden absolute')}>
                                     <FormControl>
                                         <input 
-                                            placeholder='Full Name' 
+                                            placeholder={locale === 'ar' ? "الاسم الكامل" : 'Full Name'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
                                         />
@@ -448,7 +448,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                         <FormItem className={cn("flex-1", tab !== 'booking-details' && 'hidden absolute')}>
                                             <FormControl>
                                                 <input 
-                                                    placeholder='Phone Number' 
+                                                    placeholder={locale === 'ar' ? "رقم الهاتف" : 'Phone Number'}
                                                     className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full outline-none rounded-md'
                                                     {...field}
                                                 />
@@ -465,7 +465,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("flex-1", tab !== 'booking-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Email' 
+                                                placeholder={locale === 'ar' ? "البريد الإلكتروني" : 'Email'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             />
@@ -482,7 +482,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                 <FormItem className={cn("", tab !== 'booking-details' && 'hidden absolute')}>
                                     <FormControl>
                                         <input 
-                                            placeholder='Booking Method' 
+                                            placeholder={locale === 'ar' ? "طريقة المشتري" : 'Booking Method'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
                                         />
@@ -499,7 +499,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("flex-1", tab !== 'booking-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Itinerary Number' 
+                                                placeholder={locale === 'ar' ? "رقم الطريق" : 'Itinerary Number'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             />
@@ -515,7 +515,7 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     <FormItem className={cn("flex-1", tab !== 'booking-details' && 'hidden absolute')}>
                                         <FormControl>
                                             <input 
-                                                placeholder='Price' 
+                                                placeholder={locale === 'ar' ? "السعر" : 'Price'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                                 onChange={(e) => {
@@ -548,15 +548,15 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                 )}
                                 {uploadedProof ? (
                                     <div className='flex flex-col items-center justify-center'>
-                                        <p className='font-light text-sm'>Proof Uploaded</p>
+                                        <p className='font-light text-sm'>{locale === 'ar' ? "تم تحميل التحقق" : 'Proof Uploaded'}</p>
                                     </div>
                                 ) : (
                                     <div className='flex flex-col items-center justify-center'>
-                                        <p className='font-light text-sm'>Upload Verification</p>
+                                        <p className='font-light text-sm'>{locale === 'ar' ? "تحميل التحقق" : 'Upload Verification'}</p>
                                         <p className='font-light text-[10px] text-[rgba(0,0,0,0.5)]'>PDF,JPG,JPEG,PNG</p>
                                     </div>
                                 )}
-                                {uploadedProof && <p onClick={(e) => {e.stopPropagation(); setUploadedProof(null)}} className='text-[rgba(0,0,0,0.5)] absolute top-[70%] right-[5%] underline text-[10px]'>Delete</p>}
+                                {uploadedProof && <p onClick={(e) => {e.stopPropagation(); setUploadedProof(null)}} className='text-[rgba(0,0,0,0.5)] absolute top-[70%] right-[5%] underline text-[10px]'>{locale === 'ar' ? "حذف" : 'Delete'}</p>}
                             </div>
                         )}
                         {tab === 'verification' && (
@@ -568,25 +568,25 @@ export default function HotelReservationsForm({ user }: { user: UserType })
                                     height={17} 
                                 />
                                 <p className='font-poppins font-normal text-sm text-center'>
-                                    Tip : Verification could be a screenshot from hotel’s policy, an e-mail thread etc....
+                                    {locale === 'ar' ? "نصيحة : يمكن أن تكون التحقق من شاشة من سياسة الفندق، موضوع البريد الإلكتروني إلخ." : 'Tip : Verification could be a screenshot from hotel’s policy, an e-mail thread etc....'}
                                 </p>
                             </div>
                         )}
                         <div className='flex w-full items-center justify-between'>
                             {(tab === 'booking-details' || tab === 'verification') && (
                                 <button disabled={loading} onClick={() => setTab(prev => prev === 'booking-details' ? 'hotel-details' : 'booking-details')} type='button' className='w-32 h-11 rounded-[4px] text-black border-[#00000080] border bg-[#EDEDED]'>
-                                    Back
+                                    {locale === 'ar' ? "العودة" : 'Back'}
                                 </button>
                             )}
                             {(tab === 'booking-details' || tab === 'hotel-details') && (
                                 <button onClick={() => setTab(prev => prev === 'hotel-details' ? 'booking-details' : 'verification')} disabled={tab === 'hotel-details' ? !canNextFirstSection : !canNextSecondSection} type='button' className={cn('w-32 h-11 rounded-[4px] ml-auto text-white', (tab === 'hotel-details' ? canNextFirstSection : canNextSecondSection) ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'bg-[#A7A6A6]')}>
-                                    Next
+                                    {locale === 'ar' ? "التالي" : 'Next'}
                                 </button>
                             )}
                             {tab === 'verification' && (
                                 <button disabled={!uploadedProof || loading} type='submit' className={cn('w-32 flex items-center justify-center gap-1 h-11 rounded-[4px] text-white', uploadedProof ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]' : 'bg-[#A7A6A6]', loading && 'opacity-65')}>
                                     {loading && <Loader2 className='w-6 h-6 animate-spin' />}
-                                    Confirm
+                                    {locale === 'ar' ? "تأكيد" : 'Confirm'}
                                 </button>
                             )}
                         </div>

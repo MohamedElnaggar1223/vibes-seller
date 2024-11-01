@@ -2,7 +2,7 @@ import TicketsTable from "./ticketstable"
 import BuyerRequests from "./buyerrequests"
 import Link from "next/link"
 import TicketsCards from "./tickets-cards"
-import { cn } from "@/lib/utils"
+import { cn, initTranslations } from "@/lib/utils"
 import { initAdmin } from "@/firebase/server/config"
 import { getExchangeRate } from "@/lib/utils"
 import { getUser } from "../layout"
@@ -14,10 +14,13 @@ import DigitalProductsTable from "./digital-products-table"
 
 type Props = {
     searchParams: { [key: string]: string | string[] | undefined }
+    params: { locale?: string | undefined }
 }
 
-export default async function DashboardPage({ searchParams }: Props)
+export default async function DashboardPage({ searchParams, params }: Props)
 {
+    const { t } = await initTranslations(params.locale!, ['homepage'])
+
     const tab = typeof searchParams.tab === 'string' ? searchParams.tab : 'tickets'
     const search = typeof searchParams.search === 'string' ? searchParams.search : undefined
     const filter = typeof searchParams.filter === 'string' ? searchParams.filter : undefined
@@ -70,12 +73,12 @@ export default async function DashboardPage({ searchParams }: Props)
     return (
         <section className='flex flex-col relative flex-1 items-center justify-start p-4 md:p-12 gap-8 md:max-h-screen'>
             <header className='py-4 flex gap-4 items-center justify-center w-full max-md:flex-col'>
-                <Link href='/dashboard' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', (tab !== 'hotel-reservations' && tab !== 'digital-products') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>Tickets</Link>
-                <Link href='/dashboard?tab=digital-products' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', tab === 'digital-products' ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>Digital Products</Link>
-                <Link href='/dashboard?tab=hotel-reservations' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', tab === 'hotel-reservations' ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>Hotel Reservations</Link>
+                <Link href='/dashboard' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', (tab !== 'hotel-reservations' && tab !== 'digital-products') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>{t("tickets")}</Link>
+                <Link href='/dashboard?tab=digital-products' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', tab === 'digital-products' ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>{t("digitalProducts")}</Link>
+                <Link href='/dashboard?tab=hotel-reservations' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', tab === 'hotel-reservations' ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>{t("hotelReservations")}</Link>
             </header>
-            {tab === 'hotel-reservations' ? <HotelReservationsCards user={user!} exchangeRate={exchangeRate} /> : tab === 'digital-products' ? <DigitalProductReservationsCards exchangeRate={exchangeRate} user={user!} /> : <TicketsCards exchangeRate={exchangeRate} totalAmountInEscrow={totalAmountInEscrow} totalRevenue={totalRevenue} totalTicketsForSale={totalTicketsForSale} totalTicketsOnSale={totalTicketsOnSale} totalTicketsSold={totalTicketsSold} />}
-            {tab === 'requests' ? <BuyerRequests /> : tab === 'hotel-reservations' ? <HotelReservationsTable user={user!} exchangeRate={exchangeRate} search={search} filter={filter} /> : tab === 'digital-products' ? <DigitalProductsTable exchangeRate={exchangeRate} user={user!} search={search} filter={filter} /> : <TicketsTable ticketsForSale={ticketsForSale} bundlesForSale={bundlesForSale} search={search} filter={filter} />}
+            {tab === 'hotel-reservations' ? <HotelReservationsCards locale={params.locale} user={user!} exchangeRate={exchangeRate} /> : tab === 'digital-products' ? <DigitalProductReservationsCards locale={params.locale} exchangeRate={exchangeRate} user={user!} /> : <TicketsCards locale={params.locale} exchangeRate={exchangeRate} totalAmountInEscrow={totalAmountInEscrow} totalRevenue={totalRevenue} totalTicketsForSale={totalTicketsForSale} totalTicketsOnSale={totalTicketsOnSale} totalTicketsSold={totalTicketsSold} />}
+            {tab === 'requests' ? <BuyerRequests locale={params.locale} /> : tab === 'hotel-reservations' ? <HotelReservationsTable locale={params.locale} user={user!} exchangeRate={exchangeRate} search={search} filter={filter} /> : tab === 'digital-products' ? <DigitalProductsTable locale={params.locale} exchangeRate={exchangeRate} user={user!} search={search} filter={filter} /> : <TicketsTable locale={params.locale} ticketsForSale={ticketsForSale} bundlesForSale={bundlesForSale} search={search} filter={filter} />}
         </section>
     )
 }
