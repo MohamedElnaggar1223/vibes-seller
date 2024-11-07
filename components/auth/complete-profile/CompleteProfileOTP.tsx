@@ -2,7 +2,7 @@
 import { UserType } from "@/lib/types/userTypes";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Form, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
-import { auth, db } from "@/firebase/client/config";
+import { db } from "@/firebase/client/config";
 import { updateDoc, doc } from "firebase/firestore";
 import { Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -12,7 +12,7 @@ import {
     InputOTPGroup,
     InputOTPSeparator,
     InputOTPSlot,
-  } from "@/components/ui/input-otp"
+} from "@/components/ui/input-otp"
 import { OtpSchema } from "@/lib/validations/otp";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -20,35 +20,25 @@ import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { RecaptchaVerifier, signInWithPhoneNumber, signOut } from "firebase/auth";
 import { useTranslation } from "react-i18next";
+import { sendEmailOTP } from "@/lib/server";
 
 type Props = {
     user: UserType;
 }
 
-declare global {
-    interface Window {
-        recaptchaVerifier?: RecaptchaVerifier
-        confirmationResult?: any
-    }
-}
-
 const NUMS_ONLY = /^\d+$/
 
-export default function CompleteProfileOTP({ user }: Props) 
-{
+export default function CompleteProfileOTP({ user }: Props) {
     const router = useRouter()
     const pathname = usePathname()
-
     const { t } = useTranslation()
+    const { toast } = useToast()
 
     const [loading, setLoading] = useState(false)
     const [sentOtp, setSentOtp] = useState(false)
-    const [canType, setCanType] = useState(false)
-    // const [timer, setTimer] = useState(60)
     const [error, setError] = useState('')
-    const { toast } = useToast()
+    const [generatedOTP, setGeneratedOTP] = useState('')
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -59,7 +49,6 @@ export default function CompleteProfileOTP({ user }: Props)
         }
 
         window.addEventListener('click', handleClickOutside)
-
         return () => {
             window.removeEventListener('click', handleClickOutside)
         }
@@ -72,148 +61,94 @@ export default function CompleteProfileOTP({ user }: Props)
         },
     })
 
-    // useEffect(() => {
-    //     if(auth)
-    //     {
-    //         try
-    //         {
-    //             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-    //                 'size': 'invisible',
-    //                 'callback': (response: any) => {
-    //                     handleSendCode()
-    //                 },
-    //             })
-    //         }
-    //         catch(e)
-    //         {
-    //             setError('Something went wrong! Please try again.')
-    //         }
-    //     }
-    // }, [auth])
+    const generateOTP = () => {
+        // Generate a 6-digit OTP
+        return Math.floor(100000 + Math.random() * 900000).toString()
+    }
 
-    const initiateRecaptcha = async () => {
-        try
-        {
+    const initiateEmailOTP = async () => {
+        try {
+            const newOTP = generateOTP()
+            setGeneratedOTP(newOTP)
+
+            await sendEmailOTP(user.email!, newOTP)
+
             setSentOtp(true)
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'normal',
-                'callback': async (response: any) => {
-                    setCanType(true)
-                    await handleSendCode()
-                    await window.recaptchaVerifier?.clear()
-                    toast({ 
-                        action: (
-                            <Image
-                                src='/assets/check.svg'
-                                width={25} 
-                                height={25}
-                                alt='check' 
-                            />
-                        ),
-                        title: 'Code Sent Successfully!',
-                    })
-                },
-                'expired-callback': () => {
-                }
+            toast({
+                action: (
+                    <Image
+                        src='/assets/check.svg'
+                        width={25}
+                        height={25}
+                        alt='check'
+                    />
+                ),
+                title: 'Code Sent Successfully!',
             })
-            window.recaptchaVerifier.render()
-        }
-        catch(e: any)
-        {
-            setError('Something went wrong22')
-console.error(e)
-        }
-    }
-    
-    const handleSendCode = async () => {
-        try
-        {
-            const appVerifier = window.recaptchaVerifier
-            
-            if (!appVerifier) {
-                throw new Error("reCAPTCHA verifier not initialized");
-            }
-
-            const fullPhoneNumber = `${user.countryCode}${user.phoneNumber?.startsWith('0') ? user.phoneNumber.slice(1) : user.phoneNumber}`
-            
-            const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
-            window.confirmationResult = confirmationResult;
-        }
-        catch(e: any)
-        {
+        } catch (e) {
             console.error(e)
-            setError(e.code)
+            setError('Failed to send verification code')
         }
     }
-    
-    const handleSubmitOtp = async (otp: string) => {
-        await window.confirmationResult?.confirm(otp).then(async (result: any) => {
+
+    const handleSubmitOtp = async (submittedOTP: string) => {
+        if (submittedOTP === generatedOTP) {
             await updateDoc(doc(db, "users", user.id!), { verified: true })
-        })
+            return true
+        }
+        throw new Error('Invalid OTP')
     }
 
     const onSubmit = async (values: z.infer<typeof OtpSchema>) => {
         setLoading(true)
-        try
-        {
+        try {
             await handleSubmitOtp(values.otp)
-        }
-        catch(e)
-        {
+            router.refresh()
+        } catch (e) {
             setError('Invalid OTP! Please try again')
         }
-        router.refresh()
         setLoading(false)
     }
 
     useEffect(() => {
-        if(error !== '') setTimeout(() => setError(''), 3000)
+        initiateEmailOTP()
+    }, [])
+
+    useEffect(() => {
+        if (error !== '') setTimeout(() => setError(''), 3000)
     }, [error])
-        
+
     return (
         <section className={cn('h-screen flex flex-col justify-center items-center bg-black w-fit z-10 lg:px-24 pt-12 max-lg:max-w-[100vw] max-lg:w-screen', pathname?.includes('/ar') ? 'mr-auto' : 'ml-auto')}>
-            <p className='font-poppins font-base mb-6 text-white'>{t('auth:verifyNumber')}</p>
+            <p className='font-poppins font-base mb-6 text-white'>{t('auth:verifyEmail')}</p>
             <Form {...form}>
                 <form dir='ltr' onSubmit={form.handleSubmit(onSubmit)} className="w-fit space-y-10">
-                    {
-                        sentOtp ? (
-                            <FormField
-                                control={form.control}
-                                name="otp"
-                                render={({ field }) => (
-                                    <FormItem className="">
-                                        <FormControl>
-                                            <InputOTP disabled={!canType} pattern={NUMS_ONLY.source} maxLength={6} {...field}>
-                                                <InputOTPGroup>
-                                                    <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={0} />
-                                                    <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={1} />
-                                                    <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={2} />
-                                                </InputOTPGroup>
-                                                <InputOTPSeparator className='text-white' />
-                                                <InputOTPGroup>
-                                                    <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={3} />
-                                                    <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={4} />
-                                                    <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={5} />
-                                                </InputOTPGroup>
-                                            </InputOTP>
-                                        </FormControl>
-                                        <FormMessage className="absolute font-poppins text-[#7F1D1D]" />
-                                    </FormItem>
-                                )}
-                            />
-                        ) : (
-                            <p className='font-poppins text-md mb-6 text-white'>{t('auth:codeSent')} {user.countryCode}{user.phoneNumber?.startsWith('0') ? user.phoneNumber.slice(1) : user.phoneNumber}</p>
-                        )
-                    }
-                    {sentOtp ? (
-                        <>
-                            <button type="submit" className='rounded-md font-light py-5 px-10 bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] w-full text-white font-poppins'>{t('auth:verify')}</button>
-                            {/* <span onClick={handleSendCode} className={('flex items-center justify-center text-center cursor-pointer rounded-md font-light py-5 px-10')}>Resend Code ({timer})</span> */}
-                        </>
-                    ) : (
-                        <span onClick={initiateRecaptcha} className='flex items-center justify-center text-center cursor-pointer rounded-md font-light py-5 px-10 bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] w-full text-white font-poppins'>{t('auth:sendCode')}</span>
+                    <FormField
+                        control={form.control}
+                        name="otp"
+                        render={({ field }) => (
+                            <FormItem className="">
+                                <FormControl>
+                                    <InputOTP disabled={!sentOtp} pattern={NUMS_ONLY.source} maxLength={6} {...field}>
+                                        <InputOTPGroup>
+                                            <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={0} />
+                                            <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={1} />
+                                            <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={2} />
+                                        </InputOTPGroup>
+                                        <InputOTPSeparator className='text-white' />
+                                        <InputOTPGroup>
+                                            <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={3} />
+                                            <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={4} />
+                                            <InputOTPSlot className="bg-white w-12 h-12 text-xl" index={5} />
+                                        </InputOTPGroup>
+                                    </InputOTP>
+                                </FormControl>
+                                <FormMessage className="absolute font-poppins text-[#7F1D1D]" />
+                            </FormItem>
                         )}
-                <div id="recaptcha-container" /> 
+                    />
+                    <p className='font-poppins text-md mb-6 text-white'>{t('auth:codeSent')} {user.email}</p>
+                    <button type="submit" className='rounded-md font-light py-5 px-10 bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] w-full text-white font-poppins'>{t('auth:verify')}</button>
                 </form>
             </Form>
             <Dialog open={loading}>
