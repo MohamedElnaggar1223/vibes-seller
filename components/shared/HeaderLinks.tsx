@@ -16,10 +16,9 @@ type Props = {
     setOpen: Dispatch<SetStateAction<boolean>>
 }
 
-function HeaderLinks({ setOpen }: Props) 
-{
+function HeaderLinks({ setOpen }: Props) {
     const context = useContext(CountryContext)
-    if(!context) return null
+    if (!context) return null
 
     const { country, setCountry } = context
 
@@ -34,8 +33,7 @@ function HeaderLinks({ setOpen }: Props)
     const countries = { 'SAR': 'KSA', 'AED': 'UAE', 'EGP': 'EG' }
 
     const handleLogout = async () => {
-        if(canLogOut)
-        {
+        if (canLogOut) {
             setOpen(false)
             setLoading(true)
             await auth.signOut()
@@ -45,10 +43,9 @@ function HeaderLinks({ setOpen }: Props)
     }
 
     useEffect(() => {
-        if(countryOpen) setCanLogOut(false)
-        else
-        {
-            setTimeout(() => setCanLogOut(true), 500) 
+        if (countryOpen) setCanLogOut(false)
+        else {
+            setTimeout(() => setCanLogOut(true), 500)
         }
     }, [countryOpen])
 
@@ -59,8 +56,8 @@ function HeaderLinks({ setOpen }: Props)
 
     return (
         <>
-            <span onClick={(e) => e.stopPropagation()} className='items-center justify-center flex gap-4 px-8 py-4 font-poppins font-normal text-base w-full text-center z-[99999999999999999]'>
-                {t('selectCountry')}
+            <span onClick={(e) => e.stopPropagation()} className='items-center justify-center flex flex-col gap-4 px-8 py-4 font-poppins font-normal text-base w-full text-center z-[99999999999999999]'>
+                {t('selectCurrency')}
                 <Select open={countryOpen} onOpenChange={setCountryOpen} defaultValue={defaultValue} onValueChange={(value) => {
                     //@ts-expect-error country
                     setCountry(Object.keys(countries).find(key => countries[key] === value))
@@ -68,14 +65,14 @@ function HeaderLinks({ setOpen }: Props)
                     localStorage.setItem('country', Object.keys(countries).find(key => countries[key] === value))
                     router.refresh()
                 }}>
-                    <SelectTrigger className="w-[140px] border-none bg-black text-white font-poppins text-base font-medium outline-none">
+                    <SelectTrigger className="max-w-[120px] border-none bg-black text-white font-poppins text-base font-medium outline-none">
                         <SelectValue placeholder={defaultValue} />
                     </SelectTrigger>
                     <SelectContent className='z-[999999999999999999] bg-black w-[80px] rounded-b-md p-0'>
                         <SelectGroup className='bg-black flex flex-col items-center justify-center'>
-                            <SelectItem className='bg-black text-white font-poppins cursor-pointer' value="KSA">{t('KSA')}</SelectItem>
-                            <SelectItem className='bg-black text-white font-poppins cursor-pointer' value="EG">{t('EG')}</SelectItem>
-                            <SelectItem className='bg-black text-white font-poppins cursor-pointer' value="UAE">{t('UAE')}</SelectItem>
+                            <SelectItem className='bg-black text-white font-poppins cursor-pointer' value="KSA">{t('KSA')} - SAR</SelectItem>
+                            <SelectItem className='bg-black text-white font-poppins cursor-pointer' value="EG">{t('EG')} - EGP</SelectItem>
+                            <SelectItem className='bg-black text-white font-poppins cursor-pointer' value="UAE">{t('UAE')} - AED</SelectItem>
                         </SelectGroup>
                     </SelectContent>
                 </Select>
@@ -85,7 +82,7 @@ function HeaderLinks({ setOpen }: Props)
                 <Image
                     src='/assets/logout.svg'
                     width={18}
-                    height={16} 
+                    height={16}
                     alt='logout'
                 />
                 {t('logOut')}
@@ -94,7 +91,7 @@ function HeaderLinks({ setOpen }: Props)
                 <DialogContent className='flex items-center justify-center bg-transparent border-none outline-none'>
                     <Loader2 className='animate-spin' size={42} color="#5E1F3C" />
                 </DialogContent>
-			</Dialog>
+            </Dialog>
         </>
     )
 }

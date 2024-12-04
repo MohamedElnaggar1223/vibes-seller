@@ -42,10 +42,9 @@ export const getUser = cache(async () => {
   const admin = await initAdmin()
   const cookiesData = cookies()
   const token = await decode({ token: cookiesData.get(process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token')?.value, secret: process.env.NEXTAUTH_SECRET! })
-  if(token?.sub)
-  {
+  if (token?.sub) {
     const user = (await admin.firestore().collection('users')?.doc(token?.sub as string).get()).data()
-    const userClient = {...user, cart: user?.cart && user?.cart.tickets.length ? {...user.cart, createdAt: user.cart?.createdAt?.toDate()} : undefined} as UserType
+    const userClient = { ...user, cart: user?.cart && user?.cart.tickets.length ? { ...user.cart, createdAt: user.cart?.createdAt?.toDate() } : undefined } as UserType
 
     return userClient
   }
@@ -63,8 +62,8 @@ export default async function RootLayout({
 }>) {
 
   const user = await getUser()
-  if(!user) return redirect('/sign-in')
-  if(user && !user.verified) return redirect('/complete-profile')
+  if (!user) return redirect('/sign-in')
+  if (user && !user.verified) return redirect('/complete-profile')
 
   const { resources } = await initTranslations(params.locale ?? 'en', ['homepage', 'common', 'auth'])
 
@@ -83,9 +82,9 @@ export default async function RootLayout({
         <TranslationsProvider locale={params.locale!} resources={resources} namespaces={['homepage', 'common', 'auth']}>
           <CountryContextProvider>
             <main className='min-h-screen flex'>
-              {params.locale !== 'ar' && <SideBar params={params} />}
+              {params.locale !== 'ar' && <SideBar params={params} user={user} />}
               {children}
-              {params.locale === 'ar' && <SideBar params={params} />}
+              {params.locale === 'ar' && <SideBar params={params} user={user} />}
               <SpeedInsights />
             </main>
             <Footer params={params} />

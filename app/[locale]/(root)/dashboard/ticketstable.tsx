@@ -14,8 +14,7 @@ type Props = {
     locale?: string | undefined
 }
 
-export default async function TicketsTable({ ticketsForSale, bundlesForSale, search, filter, locale }: Props)
-{
+export default async function TicketsTable({ ticketsForSale, bundlesForSale, search, filter, locale }: Props) {
     const { t } = await initTranslations(locale!, ['homepage'])
 
     const individualTickets = ticketsForSale.filter(ticket => ticket.salePrice).map(ticket => ({ ...ticket, type: 'individual' }))
@@ -24,7 +23,7 @@ export default async function TicketsTable({ ticketsForSale, bundlesForSale, sea
     const displayedTickets = [...individualTickets, ...bundles].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
 
     return (
-        <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-hidden'>
+        <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-auto min-h-[400px]'>
             <div className='flex w-full max-w-full items-center justify-between gap-4 max-lg:flex-col'>
                 <Link href='/dashboard?tab=requests' className='bg-[#E72377] rounded-[4px] font-light py-3 flex-1 text-sm max-w-[160px] w-screen px-6 text-white font-poppins'>{t("buyerRequests")}</Link>
                 <div className='flex gap-4 items-center justify-center max-w-full'>

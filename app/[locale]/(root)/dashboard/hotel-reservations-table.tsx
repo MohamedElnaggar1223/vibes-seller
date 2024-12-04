@@ -15,16 +15,15 @@ type Props = {
     filter?: string
 }
 
-export default async function HotelReservationsTable({ search, filter, user, exchangeRate, locale }: Props)
-{
+export default async function HotelReservationsTable({ search, filter, user, exchangeRate, locale }: Props) {
     const admin = await initAdmin()
-    
+
     const hotelsCollection = admin.firestore().collection('hotels')
 
-    const userHotelsListings = (await hotelsCollection.where('userId', '==', user.id).get()).docs.map(doc => ({...doc.data(), id: doc.id, date: { from: doc.data().date.from.toDate(), to: doc.data().date.to.toDate() }})) as unknown as Hotel[]
+    const userHotelsListings = (await hotelsCollection.where('userId', '==', user.id).get()).docs.map(doc => ({ ...doc.data(), id: doc.id, date: { from: doc.data().date.from.toDate(), to: doc.data().date.to.toDate() } })) as unknown as Hotel[]
 
     return (
-        <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-hidden'>
+        <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-auto min-h-[400px]'>
             <div className='flex w-full items-center justify-between gap-4'>
                 <div className='flex gap-4 items-center justify-center ml-auto'>
                     <SearchBarHotelReservationsTable tab='hotel-reservations' search={search} filter={filter} />

@@ -6,14 +6,13 @@ import Image from "next/image"
 import Link from "next/link"
 import UploadProofButton from "./upload-proof-button"
 
-export default async function BuyerRequests({  locale }: { locale: string | undefined })
-{
+export default async function BuyerRequests({ locale }: { locale: string | undefined }) {
     const { t } = await initTranslations(locale!, ['homepage'])
 
     const admin = await initAdmin()
 
-    const ticketRequests = (await admin.firestore().collection('tickets').where('requested', '==', true).where('forSale', '==', true).where('requestStatus', '==', 'pending').get()).docs.map(doc => ({...doc.data(), createdAt: doc.data()?.createdAt.toDate()})) as TicketType[]
-    const bundlesRequests = (await admin.firestore().collection('bundles').where('requested', '==', true).where('status', '==', 'inEscrow').where('requestStatus', '==', 'pending').get()).docs.map(doc => ({...doc.data(), createdAt: doc.data()?.createdAt.toDate()})) as Bundle[]
+    const ticketRequests = (await admin.firestore().collection('tickets').where('requested', '==', true).where('forSale', '==', true).where('requestStatus', '==', 'pending').get()).docs.map(doc => ({ ...doc.data(), createdAt: doc.data()?.createdAt.toDate() })) as TicketType[]
+    const bundlesRequests = (await admin.firestore().collection('bundles').where('requested', '==', true).where('status', '==', 'inEscrow').where('requestStatus', '==', 'pending').get()).docs.map(doc => ({ ...doc.data(), createdAt: doc.data()?.createdAt.toDate() })) as Bundle[]
 
     const eventsIds = [...ticketRequests.map(doc => doc?.eventId), ...bundlesRequests.map(doc => doc?.eventId)]
     const events = await Promise.all(eventsIds.map(async (eventId: string) => {
@@ -26,9 +25,9 @@ export default async function BuyerRequests({  locale }: { locale: string | unde
     }))
 
     return (
-        <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-hidden'>
+        <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-auto min-h-[400px]'>
             <div className='flex w-full items-center justify-between gap-4'>
-                <Link href='/dashboard' className='bg-[#EB5E1B] rounded-[4px] font-light py-3 flex-1 text-sm max-w-[160px] w-screen px-6 text-white font-poppins'>{t("ticketsStatus")}</Link> 
+                <Link href='/dashboard' className='bg-[#EB5E1B] rounded-[4px] font-light py-3 flex-1 text-sm max-w-[160px] w-screen px-6 text-white font-poppins'>{t("ticketsStatus")}</Link>
             </div>
             <div className='grid grid-cols-2 max-md:grid-cols-1 gap-4 w-full p-4'>
                 {ticketRequests.map(ticket => {
@@ -38,15 +37,15 @@ export default async function BuyerRequests({  locale }: { locale: string | unde
                     return (
                         <div key={ticket.id} className='flex flex-col gap-1'>
                             <div className='px-8 py-2 bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] font-medium text-white rounded-[8px]'>
-                                <p className='text-xs font-poppins text-center'>{t("pleaseSend")}<br/><br/> {t("makeSure")} {ticket?.platform} {locale !== 'ar' && "E-mail"}</p> 
+                                <p className='text-xs font-poppins text-center'>{t("pleaseSend")}<br /><br /> {t("makeSure")} {ticket?.platform} {locale !== 'ar' && "E-mail"}</p>
                             </div>
                             <div className='flex overflow-hidden gap-1 bg-white rounded-[8px] min-h-[115px] w-full'>
                                 <Image
                                     src={event?.displayPageImage!}
-                                    width={109} 
-                                    height={115} 
+                                    width={109}
+                                    height={115}
                                     alt={event?.name!}
-                                    // className='object-cover max-lg:max-w-32 max-lg:min-h-32 lg:min-w-48 lg:min-h-48 cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out rounded-lg'
+                                // className='object-cover max-lg:max-w-32 max-lg:min-h-32 lg:min-w-48 lg:min-h-48 cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out rounded-lg'
                                 />
                                 <div className='flex flex-col gap-2 justify-between flex-1 px-2'>
                                     <p className='font-poppins font-medium text-sm mt-2'>{locale === 'ar' ? event?.nameArabic : event?.name}</p>

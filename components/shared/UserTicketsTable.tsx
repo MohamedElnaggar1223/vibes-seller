@@ -34,10 +34,9 @@ type UploadedTicket = {
     }
 }[]
 
-export default function UserTicketsTable({ tickets, user, event, locale }: Props) 
-{
+export default function UserTicketsTable({ tickets, user, event, locale }: Props) {
     const context = useContext(CountryContext)
-    if(!context) return <Loader2 className='animate-spin' />
+    if (!context) return <Loader2 className='animate-spin' />
     const { country } = context
 
     const router = useRouter()
@@ -96,27 +95,26 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
 
     const handleSellTickets = async () => {
         setLoading(true)
-        if(sellingType === 'individual') 
-        {
+        if (sellingType === 'individual') {
             await runTransaction(db, async (transaction) => {
                 const ticketsPromise = ticketsSelectedWithPrice.map(async (ticket) => {
                     const salePrice = typeof ticket.salePrice === 'string' ? parseInt(ticket.salePrice) : typeof ticket.salePrice === 'number' ? ticket.salePrice : 0
                     const ticketDoc = doc(db, 'tickets', ticket.id)
                     await transaction.update(ticketDoc, { forSale: true, saleStatus: 'pending', salePrice })
                 })
-    
+
                 await Promise.all(ticketsPromise)
             })
         }
-        else if(sellingType === 'bundle') 
-        {
+        else if (sellingType === 'bundle') {
             const addedBundle = {
                 userId: user.id,
                 eventId: ticketsSelectedWithPrice.length ? ticketsSelectedWithPrice[0].eventId : null,
                 tickets: ticketsSelectedWithPrice.map(ticket => ticket.id),
                 price: typeof bundlePrice === 'string' ? parseInt(bundlePrice) : bundlePrice,
                 createdAt: Timestamp.now(),
-                status: 'pending'
+                status: 'pending',
+                country: country,
             }
             await runTransaction(db, async (transaction) => {
 
@@ -137,7 +135,7 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
     const handleUploadTicketsPdfs = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files
 
-        if(!files) return
+        if (!files) return
 
         const ticketsUploadedArray = Array.from(files).map(file => ({ ticket: file, seat: { row: undefined, column: undefined } }))
 
@@ -146,7 +144,7 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
 
     const handleUploadTickets = async () => {
         setAddTicketsSeatsOpen(false)
-        if(!uploadedTickets || !ticketsType || !platform) return
+        if (!uploadedTickets || !ticketsType || !platform) return
 
         setLoading(true)
 
@@ -196,7 +194,7 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
     const arabicTicketNames = useMemo(() => {
         let tickets = {} as { [key: string]: string }
         Object.keys(ticketsGroups).forEach(key => {
-            tickets = {...tickets, [key]: event.tickets.find(t => t.name === key)?.nameArabic ?? key}
+            tickets = { ...tickets, [key]: event.tickets.find(t => t.name === key)?.nameArabic ?? key }
         })
         return tickets
     }, [event, ticketsGroups])
@@ -213,10 +211,10 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                                         ({locale === 'ar' ? toArabicNums(ticketsArray?.length.toString() ?? '0') : ticketsArray?.length}) {locale === 'ar' ? arabicTicketNames[key] : key}
                                     </p>
                                     <div onClick={(e) => e.stopPropagation()} className={cn("flex items-center space-x-2", locale === 'ar' ? 'mr-auto' : 'ml-auto')}>
-                                        <Checkbox 
-                                            checked={ticketsSelect[key]?.length === ticketsArray.length} 
+                                        <Checkbox
+                                            checked={ticketsSelect[key]?.length === ticketsArray.length}
                                             onCheckedChange={() => setTicketsSelect(prev => ({ ...prev, [key]: prev[key]?.length === ticketsArray.length ? [] : ticketsArray }))}
-                                            id="selectAll" 
+                                            id="selectAll"
                                             className='bg-white font-poppins checked:bg-white aria-checked:bg-white min-w-5 min-h-5'
                                         />
                                         <label
@@ -232,8 +230,8 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                                         {ticketsArray.map(ticket => (
                                             <div key={ticket.id} className='flex rounded-sm items-center justify-between flex-[1_1_40%] bg-[rgba(0,0,0,0.4)] px-2 py-4 lg:px-8 text-white'>
                                                 <div className='flex items-center gap-4'>
-                                                    <Checkbox 
-                                                        checked={ticketsSelect[key]?.includes(ticket)} 
+                                                    <Checkbox
+                                                        checked={ticketsSelect[key]?.includes(ticket)}
                                                         onCheckedChange={() => setTicketsSelect(prev => ({ ...prev, [key]: prev[key]?.includes(ticket) ? prev[key]?.filter(t => t !== ticket) : [...prev[key], ticket] }))}
                                                         id={ticket.id}
                                                         className='min-w-6 min-h-6 bg-white'
@@ -252,20 +250,20 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                             </AccordionItem>
                         ))}
                     </Accordion>
-                        <div className='w-full sticky bottom-0'>
-                            <div className='flex items-center justify-between pb-4'>
-                                {event.uploadedTickets && (
-                                    <div className='flex flex-col gap-1'>
-                                        <p className='font-poppins text-xs font-light text-white'>{t("haveOtherTickets")}</p>
-                                        <button onMouseDown={() => setAddTicketsOpen(true)} className='px-10 py-3 bg-white rounded-sm text-black font-poppins text-xs font-medium'>{t("addTicket")}</button>
-                                    </div>
-                                )}
-                                <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className='flex flex-col gap-1 items-center justify-center ml-auto'>
-                                    <p className='font-poppins text-xs lg:text-sm font-extralight text-white'>({locale === 'ar' ? toArabicNums(ticketsNumber.toString()) : ticketsNumber}) {t("ticketsSelected")}</p>
-                                    <button disabled={ticketsNumber === 0} onMouseDown={() => setConfirmedTickets(true)} className='px-8 py-4 disabled:opacity-65 bg-white rounded-sm text-black font-poppins text-xs lg:text-sm font-medium'>{t("confirmSelection")}</button>
+                    <div className='w-full sticky bottom-0'>
+                        <div className='flex items-center justify-between pb-4'>
+                            {event.uploadedTickets && (
+                                <div className='flex flex-col gap-1'>
+                                    <p className='font-poppins text-xs font-light text-white'>{t("haveOtherTickets")}</p>
+                                    <button onMouseDown={() => setAddTicketsOpen(true)} className='px-10 py-3 bg-white rounded-sm text-black font-poppins text-xs font-medium'>{t("addTicket")}</button>
                                 </div>
+                            )}
+                            <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className='flex flex-col gap-1 items-center justify-center ml-auto'>
+                                <p className='font-poppins text-xs lg:text-sm font-extralight text-white'>({locale === 'ar' ? toArabicNums(ticketsNumber.toString()) : ticketsNumber}) {t("ticketsSelected")}</p>
+                                <button disabled={ticketsNumber === 0} onMouseDown={() => setConfirmedTickets(true)} className='px-8 py-4 disabled:opacity-65 bg-white rounded-sm text-black font-poppins text-xs lg:text-sm font-medium'>{t("confirmSelection")}</button>
                             </div>
                         </div>
+                    </div>
                 </>
             ) : (
                 <div className='flex flex-col items-center justify-center w-full gap-4'>
@@ -280,8 +278,8 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                     </DialogHeader>
                     <div className='flex flex-col items-start justify-center gap-4 w-screen max-w-[248px] mx-auto'>
                         <div className='flex items-center gap-4 w-full'>
-                            <Checkbox 
-                                checked={sellingType === 'individual'} 
+                            <Checkbox
+                                checked={sellingType === 'individual'}
                                 onCheckedChange={() => setSellingType('individual')}
                                 className='min-w-4 min-h-4 rounded-full bg-[#D9D9D9] outline-none border-none [&_svg]:stroke-none'
                                 id='individual'
@@ -294,8 +292,8 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                             </label>
                         </div>
                         <div className='flex items-center gap-4 w-full'>
-                            <Checkbox 
-                                checked={sellingType === 'bundle'} 
+                            <Checkbox
+                                checked={sellingType === 'bundle'}
                                 onCheckedChange={() => setSellingType('bundle')}
                                 className='min-w-4 min-h-4 rounded-full bg-[#D9D9D9] outline-none border-none [&_svg]:stroke-none'
                                 id='bundle'
@@ -309,12 +307,12 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                         </div>
                     </div>
                     <DialogFooter className='flex w-full items-center justify-center'>
-                        <button 
+                        <button
                             onClick={() => {
                                 setConfirmedTickets(false)
                                 setChoosePricesOpen(true)
-                            }} 
-                            disabled={!sellingType} 
+                            }}
+                            disabled={!sellingType}
                             className='px-10 py-4 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
                         >
                             {t("confirm")}
@@ -333,11 +331,11 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                                 src="/assets/bulb.svg"
                                 alt="bulb"
                                 width={17}
-                                height={17} 
+                                height={17}
                             />
                             <p className='font-poppins font-normal text-sm text-center'>
                                 {t("tipHalf1")}
-                                <br/>
+                                <br />
                                 {t("tipHalf2")}
                             </p>
                         </div>
@@ -345,28 +343,28 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                     {sellingType === 'individual' ? (
                         <div className='flex flex-col gap-4'>
                             {unifyPrice ? (
-                                <p onClick={() => {setUnifyPrice(false); setTicketsSelectedWithPrice(prev => prev.map(ticket => ({...ticket, salePrice: ''})))}} className={cn('ml-auto underline font-poppins font-normal text-base text-center cursor-pointer unify-price')}>
+                                <p onClick={() => { setUnifyPrice(false); setTicketsSelectedWithPrice(prev => prev.map(ticket => ({ ...ticket, salePrice: '' }))) }} className={cn('ml-auto underline font-poppins font-normal text-base text-center cursor-pointer unify-price')}>
                                     {t("cancelUnify")}
                                 </p>
                             ) : (
-                                <p onClick={() => {setUnifyPrice(true); setUnifyPriceOpen(true)}} className={cn('ml-auto underline font-poppins font-normal text-base text-center cursor-pointer')}>
+                                <p onClick={() => { setUnifyPrice(true); setUnifyPriceOpen(true) }} className={cn('ml-auto underline font-poppins font-normal text-base text-center cursor-pointer')}>
                                     {t("unifyPrice")}
                                 </p>
-                            ) }
+                            )}
                             <div className='flex flex-col w-full gap-2 max-h-[480px] overflow-auto'>
-                                {ticketsSelectedWithPrice.map((ticket, index) => <TicketPrice locale={locale} arabicTicketNames={arabicTicketNames} index={index} key={ticket.id} ticket={ticket} setTicketsSelectedWithPrice={setTicketsSelectedWithPrice} />)}
+                                {ticketsSelectedWithPrice.map((ticket, index) => <TicketPrice locale={locale} arabicTicketNames={arabicTicketNames} index={index} key={ticket.id} ticket={ticket} setTicketsSelectedWithPrice={setTicketsSelectedWithPrice} country={country!} />)}
                             </div>
                             <div className='w-full mt-8 flex items-center justify-center gap-2'>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setChoosePricesOpen(false)
-                                    }} 
+                                    }}
                                     className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
                                 >
                                     {t("cancel")}
                                 </button>
-                                <button 
-                                    disabled={ticketsSelectedWithPrice.find(ticket => !ticket.salePrice) !== undefined} 
+                                <button
+                                    disabled={ticketsSelectedWithPrice.find(ticket => !ticket.salePrice) !== undefined}
                                     onClick={() => setAgreeToTerms(true)}
                                     className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
                                 >
@@ -391,21 +389,21 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                                         ))}
                                     </div>
                                     <div className="flex-1 flex items-end justify-start">
-                                        <input value={bundlePrice} onChange={(e) => setBundlePrice(prev => /^-?\d+(\.\d+)?$/.test(e.target.value) ? e.target.value : prev)} placeholder="0.00 EGP" className='bg-[#1E1E1E] sticky top-2 mb-auto ml-auto rounded-sm w-20 text-center h-7 text-white font-poppins text-sm font-normal' />
+                                        <input value={bundlePrice} onChange={(e) => setBundlePrice(prev => /^-?\d+(\.\d+)?$/.test(e.target.value) ? e.target.value : prev)} placeholder={`0.00 ${country}`} className='bg-[#1E1E1E] sticky top-2 mb-auto ml-auto rounded-sm w-20 text-center h-7 text-white font-poppins text-sm font-normal' />
                                     </div>
                                 </div>
                             </div>
                             <div className='w-full mt-8 flex items-center justify-center gap-2'>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setChoosePricesOpen(false)
-                                    }} 
+                                    }}
                                     className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
                                 >
                                     {t("cancel")}
                                 </button>
-                                <button 
-                                    disabled={!bundlePrice} 
+                                <button
+                                    disabled={!bundlePrice}
                                     onClick={() => setAgreeToTerms(true)}
                                     className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
                                 >
@@ -427,7 +425,7 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                                 src="/assets/bulb.svg"
                                 alt="bulb"
                                 width={17}
-                                height={17} 
+                                height={17}
                             />
                             <p className='font-poppins font-normal text-sm text-center'>
                                 {t("tipHalf1")}
@@ -437,12 +435,12 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                         </div>
                     </DialogHeader>
                     <input placeholder="Price Per Ticket" className='outline-none text-center mx-auto rounded-md w-fit px-1 py-4 bg-white shadow-2xl border border-[rgba(0,0,0,0.15)]' value={unifyPriceValue} onChange={(e) => setUnifyPriceValue(prev => /^-?\d+(\.\d+)?$/.test(e.target.value) ? e.target.value : prev)} />
-                    <button 
-                        disabled={!unifyPriceValue} 
+                    <button
+                        disabled={!unifyPriceValue}
                         onClick={() => {
                             setTicketsSelectedWithPrice(prev => prev.map(ticket => ({ ...ticket, salePrice: unifyPriceValue })))
                             setUnifyPriceOpen(false)
-                        }} 
+                        }}
                         className='px-10 py-4 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
                     >
                         {t("confirmPrice")}
@@ -455,7 +453,7 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                         {t("uponAgreeing")}
                     </p>
                     <div className='w-full mt-8 flex items-center justify-center gap-2'>
-                        <button 
+                        <button
                             onClick={() => {
                                 setAgreeToTerms(false)
                                 setChoosePricesOpen(false)
@@ -464,8 +462,8 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                         >
                             {t("decline")}
                         </button>
-                        <button 
-                            onClick={handleSellTickets} 
+                        <button
+                            onClick={handleSellTickets}
                             className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
                         >
                             {t("agreeToTerms")}
@@ -509,14 +507,14 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                                 src='/assets/uploadedCheck.svg'
                                 alt='upload'
                                 width={23}
-                                height={24} 
+                                height={24}
                             />
                         ) : (
                             <Image
                                 src='/assets/upload.svg'
                                 alt='upload'
                                 width={32}
-                                height={26} 
+                                height={26}
                             />
                         )}
                         {uploadedTickets?.length ? (
@@ -530,10 +528,10 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                                 <p className='font-light text-[10px] text-[rgba(0,0,0,0.5)]'>PDF</p>
                             </div>
                         )}
-                        {(uploadedTickets?.length ?? 0) > 0 && <p onClick={(e) => {e.stopPropagation(); setUploadedTickets(null)}} className='text-[rgba(0,0,0,0.5)] absolute top-[70%] right-[5%] underline text-[10px]'>{t("delete")}</p>}
+                        {(uploadedTickets?.length ?? 0) > 0 && <p onClick={(e) => { e.stopPropagation(); setUploadedTickets(null) }} className='text-[rgba(0,0,0,0.5)] absolute top-[70%] right-[5%] underline text-[10px]'>{t("delete")}</p>}
                     </div>
                     {event.seated ? (
-                        <button 
+                        <button
                             disabled={!uploadedTickets || !ticketsType || !platform}
                             className='px-10 py-4 mt-2 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
                             onClick={() => setAddTicketsSeatsOpen(true)}
@@ -541,7 +539,7 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                             {t("next")}
                         </button>
                     ) : (
-                        <button 
+                        <button
                             disabled={!uploadedTickets || !ticketsType || !platform}
                             className='px-10 py-4 mt-2 text-white disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] rounded-sm font-poppins text-xs lg:text-sm font-medium mx-auto'
                             onClick={handleUploadTickets}
@@ -549,7 +547,7 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                             {t("addTickets")}
                         </button>
                     )}
-                </DialogContent>    
+                </DialogContent>
             </Dialog>
             <Dialog open={addTicketsSeatsOpen} onOpenChange={setAddTicketsSeatsOpen}>
                 <DialogContent className='flex flex-col gap-4 px-2'>
@@ -569,25 +567,25 @@ export default function UserTicketsTable({ tickets, user, event, locale }: Props
                                 <div className='flex pl-6 pr-12 items-center justify-between w-full'>
                                     <p className='font-poppins text-sm font-medium text-black w-1/2'>{ticket.ticket.name.replace('.pdf', '')}</p>
                                     <div className='flex w-1/2 gap-6'>
-                                        <input value={ticket.seat.row} onChange={(e) => setUploadedTickets(prev => (/^-?\d+(\.\d+)?$/.test(e.target.value) && prev) ? prev.map((ticketDoc, indexPrev) => index === indexPrev ? ({...ticketDoc, seat: { column: ticketDoc.seat.column, row: typeof e.target.value === 'string' ? parseInt(e.target.value) : ticket.seat.row } }) : ticketDoc) : prev)} placeholder="0" className='bg-[#1E1E1E] rounded-sm w-20 text-center h-7 text-white font-poppins text-sm font-normal focus:outline-none' />
-                                        <input value={ticket.seat.column} onChange={(e) => setUploadedTickets(prev => (/^-?\d+(\.\d+)?$/.test(e.target.value) && prev) ? prev.map((ticketDoc, indexPrev) => index === indexPrev ? ({...ticketDoc, seat: { row: ticketDoc.seat.row, column: typeof e.target.value === 'string' ? parseInt(e.target.value) : ticket.seat.column } }) : ticketDoc) : prev)} placeholder="0" className='bg-[#1E1E1E] rounded-sm w-20 text-center h-7 text-white font-poppins text-sm font-normal focus:outline-none' />
+                                        <input value={ticket.seat.row} onChange={(e) => setUploadedTickets(prev => (/^-?\d+(\.\d+)?$/.test(e.target.value) && prev) ? prev.map((ticketDoc, indexPrev) => index === indexPrev ? ({ ...ticketDoc, seat: { column: ticketDoc.seat.column, row: typeof e.target.value === 'string' ? parseInt(e.target.value) : ticket.seat.row } }) : ticketDoc) : prev)} placeholder="0" className='bg-[#1E1E1E] rounded-sm w-20 text-center h-7 text-white font-poppins text-sm font-normal focus:outline-none' />
+                                        <input value={ticket.seat.column} onChange={(e) => setUploadedTickets(prev => (/^-?\d+(\.\d+)?$/.test(e.target.value) && prev) ? prev.map((ticketDoc, indexPrev) => index === indexPrev ? ({ ...ticketDoc, seat: { row: ticketDoc.seat.row, column: typeof e.target.value === 'string' ? parseInt(e.target.value) : ticket.seat.column } }) : ticketDoc) : prev)} placeholder="0" className='bg-[#1E1E1E] rounded-sm w-20 text-center h-7 text-white font-poppins text-sm font-normal focus:outline-none' />
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                     <div className='w-full mt-8 flex items-center justify-center gap-2'>
-                        <button 
+                        <button
                             onClick={() => {
                                 setChoosePricesOpen(false)
                                 setAddTicketsOpen(false)
-                            }} 
+                            }}
                             className='text-center font-poppins rounded-[6px] text-black bg-[#FFF1F1] py-3 w-[45%]'
                         >
                             {t("cancel")}
                         </button>
-                        <button 
-                            disabled={Array.from(uploadedTickets ?? []).find(ticket => !ticket.ticket || !ticket.seat.column || !ticket.seat.row) !== undefined} 
+                        <button
+                            disabled={Array.from(uploadedTickets ?? []).find(ticket => !ticket.ticket || !ticket.seat.column || !ticket.seat.row) !== undefined}
                             onClick={handleUploadTickets}
                             className='text-center font-poppins rounded-[6px] text-white py-3 w-[45%] disabled:bg-[#A7A6A6] disabled:from-[#A7A6A6] disabled:to-[#A7A6A6] bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%]'
                         >

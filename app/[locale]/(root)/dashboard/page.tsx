@@ -17,8 +17,7 @@ type Props = {
     params: { locale?: string | undefined }
 }
 
-export default async function DashboardPage({ searchParams, params }: Props)
-{
+export default async function DashboardPage({ searchParams, params }: Props) {
     const { t } = await initTranslations(params.locale!, ['homepage'])
 
     const tab = typeof searchParams.tab === 'string' ? searchParams.tab : 'tickets'
@@ -34,14 +33,14 @@ export default async function DashboardPage({ searchParams, params }: Props)
     const ticketsCollection = admin.firestore().collection('tickets')
     const bundlesCollection = admin.firestore().collection('bundles')
 
-    const ticketsForSale = (await ticketsCollection.where('forSale', '==', true).where('saleStatus', '!=', null).where('userId', '==', user?.id).get()).docs.map(doc => ({...doc.data(), createdAt: doc.data()?.createdAt.toDate()})) as TicketType[]
-    const bundlesForSale = (await bundlesCollection.where('userId', '==', user?.id).get()).docs.map(doc => ({...doc.data(), id: doc.id, createdAt: doc.data()?.createdAt.toDate()})) as Bundle[]
+    const ticketsForSale = (await ticketsCollection.where('forSale', '==', true).where('saleStatus', '!=', null).where('userId', '==', user?.id).get()).docs.map(doc => ({ ...doc.data(), createdAt: doc.data()?.createdAt.toDate() })) as TicketType[]
+    const bundlesForSale = (await bundlesCollection.where('userId', '==', user?.id).get()).docs.map(doc => ({ ...doc.data(), id: doc.id, createdAt: doc.data()?.createdAt.toDate() })) as Bundle[]
     const ticketsSold = ticketsForSale.filter((doc) => doc.saleStatus === 'sold')
     const bundlesWithTickets = await Promise.all(bundlesForSale.map(async (bundle) => {
         const tickets = await ticketsCollection.where('bundleID', '==', bundle.id).where('userId', '!=', user?.id ?? '').get()
-        return {...bundle, tickets: tickets.docs.map(doc => ({...doc.data(), id: doc.id, createdAt: doc.data()?.createdAt.toDate()})) as TicketType[]}
+        return { ...bundle, tickets: tickets.docs.map(doc => ({ ...doc.data(), id: doc.id, createdAt: doc.data()?.createdAt.toDate() })) as TicketType[] }
     }))
-    
+
     let totalRevenue = ticketsSold.reduce((acc, doc) => {
         const ticketCountry = doc.country
         const ticketPrice = (typeof doc.salePrice === 'string' ? parseFloat(doc.salePrice) : doc.salePrice!)
@@ -71,7 +70,7 @@ export default async function DashboardPage({ searchParams, params }: Props)
     }, 0)
 
     return (
-        <section className='flex flex-col relative flex-1 items-center justify-start p-4 md:p-12 gap-8 md:max-h-screen'>
+        <section className='flex flex-col relative flex-1 items-center justify-start p-4 md:p-12 gap-8 md:max-h-screen overflow-auto'>
             <header className='py-4 flex gap-4 items-center justify-center w-full max-md:flex-col'>
                 <Link href='/dashboard' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', (tab !== 'hotel-reservations' && tab !== 'digital-products') ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>{t("tickets")}</Link>
                 <Link href='/dashboard?tab=digital-products' className={cn('rounded-[4px] font-light py-2 flex-1 max-w-[197px] w-screen px-2 font-poppins text-center flex items-center justify-center', tab === 'digital-products' ? 'bg-gradient-to-r from-[#E72377] from-[-5.87%] to-[#EB5E1B] to-[101.65%] text-white' : 'bg-white text-black')}>{t("digitalProducts")}</Link>

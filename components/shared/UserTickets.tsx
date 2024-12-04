@@ -9,8 +9,7 @@ type Props = {
     locale?: string | undefined
 }
 
-export default async function UserTickets({ eventId, locale }: Props)
-{
+export default async function UserTickets({ eventId, locale }: Props) {
     const { t } = await initTranslations(locale!, ['homepage', 'common'])
 
     const user = await getUser()
@@ -19,13 +18,13 @@ export default async function UserTickets({ eventId, locale }: Props)
 
     const userTickets = user?.tickets?.map(async (ticket) => {
         const ticketData = await admin.firestore().collection('tickets').doc(ticket).get()
-        return {...ticketData.data(), createdAt: ticketData.data()?.createdAt.toDate()} as TicketType
+        return { ...ticketData.data(), createdAt: ticketData.data()?.createdAt.toDate() } as TicketType
     })
 
     const finalUserTickets = await Promise.all(userTickets!)
 
     const event = await getEvent(eventId)
-    
+
     const userEventTickets = finalUserTickets?.filter((ticket) => ticket?.eventId === eventId && !ticket.forSale)
 
     return (
@@ -36,7 +35,7 @@ export default async function UserTickets({ eventId, locale }: Props)
                     <p className='font-poppins text-xs lg:text-md font-normal text-white'>{t("showingTotal")} ({locale === 'ar' ? toArabicNums(userEventTickets?.length.toString() ?? '0') : userEventTickets?.length}) {t("tickets")}</p>
                 </div>
             )}
-            <UserTicketsTable user={user!} tickets={userEventTickets} event={event!} locale={locale} />
+            <UserTicketsTable user={user!} tickets={userEventTickets} event={event!} locale={locale} key={JSON.stringify(userEventTickets)} />
         </div>
     )
 }

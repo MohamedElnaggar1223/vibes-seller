@@ -15,16 +15,15 @@ type Props = {
     filter?: string
 }
 
-export default async function DigitalProductsTable({ search, filter, user, exchangeRate, locale }: Props)
-{
+export default async function DigitalProductsTable({ search, filter, user, exchangeRate, locale }: Props) {
     const admin = await initAdmin()
-    
+
     const digitalProductsCollection = admin.firestore().collection('digitalProducts')
 
-    const userDigitalProductsListings = (await digitalProductsCollection.where('userId', '==', user.id).get()).docs.map(doc => ({...doc.data(), id: doc.id})) as unknown as DigitalProduct[]
+    const userDigitalProductsListings = (await digitalProductsCollection.where('userId', '==', user.id).get()).docs.map(doc => ({ ...doc.data(), id: doc.id })) as unknown as DigitalProduct[]
 
     return (
-        <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-hidden'>
+        <section className='flex flex-col relative flex-1 items-center justify-start mt-16 gap-8 w-full overflow-auto min-h-[400px]'>
             <div className='flex w-full items-center justify-between gap-4'>
                 <div className='flex gap-4 items-center justify-center ml-auto'>
                     <SearchBarDigitalProductsTable tab='digital-products' search={search} filter={filter} />
