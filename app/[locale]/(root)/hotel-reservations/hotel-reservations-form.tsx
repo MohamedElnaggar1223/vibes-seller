@@ -11,7 +11,7 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-  } from "@/components/ui/form"
+} from "@/components/ui/form"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { CalendarIcon, Loader2 } from "lucide-react"
@@ -78,10 +78,9 @@ const hotelReservationSchema = z.object({
     })
 })
 
-export default function HotelReservationsForm({ user, locale }: { user: UserType, locale: string | undefined })
-{
+export default function HotelReservationsForm({ user, locale }: { user: UserType, locale: string | undefined }) {
     const context = useContext(CountryContext)
-    if(!context) return <Loader2 className='animate-spin' />
+    if (!context) return <Loader2 className='animate-spin' />
     const { country } = context
 
     const router = useRouter()
@@ -124,7 +123,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
             price: ''
         },
     })
-    
+
     const canNextFirstSection = useMemo(() => {
         return [form.getValues('adults'), form.getValues('date'), form.getValues('name'), form.getValues('address'), form.getValues('zipCode'), form.getValues('roomType'), form.getValues('boardType')].every(value => value)
     }, [form.getValues('address'), form.getValues('adults'), form.getValues('boardType'), form.getValues('date'), form.getValues('name'), form.getValues('roomType'), form.getValues('zipCode')])
@@ -134,25 +133,25 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
     }, [form.getValues('bookingMethod'), form.getValues('countryCode'), form.getValues('email'), form.getValues('fullName'), form.getValues('itineraryNumber'), form.getValues('phoneNumber'), form.getValues('price')])
 
     async function onSubmit(values: z.infer<typeof hotelReservationSchema>) {
-        if(!uploadedProof) return
+        if (!uploadedProof) return
 
         setLoading(true)
 
-        try
-        {
+        try {
             await runTransaction(db, async (transaction) => {
                 const hotelDoc = doc(collection(db, "hotels"))
-    
+
                 const proof = `hotels/${hotelDoc.id}`
-    
+
                 const addedHotel = {
                     ...values,
                     proof,
                     status: 'pending',
                     userId: user.id,
-                    country
+                    country,
+                    id: hotelDoc.id,
                 }
-    
+
                 await transaction.set(hotelDoc, addedHotel)
                 const storageRef = ref(storage, proof)
                 await uploadBytesResumable(storageRef, uploadedProof);
@@ -160,12 +159,10 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
 
             router.push('/dashboard?tab=hotel-reservations')
         }
-        catch(e: any)
-        {
+        catch (e: any) {
             setError(e?.message ?? 'Something went wrong')
         }
-        finally
-        {
+        finally {
             setLoading(false)
         }
     }
@@ -175,8 +172,8 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
     const handleUploadTicketsPdfs = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files
 
-        if(!files) return
-        
+        if (!files) return
+
         setUploadedProof(files[0])
     }
 
@@ -217,7 +214,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                             render={({ field }) => (
                                 <FormItem className={cn("", tab !== 'hotel-details' && 'hidden absolute')}>
                                     <FormControl>
-                                        <input 
+                                        <input
                                             placeholder={locale === 'ar' ? "اسم الفندق" : 'Hotel Name'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
@@ -233,7 +230,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                             render={({ field }) => (
                                 <FormItem className={cn("", tab !== 'hotel-details' && 'hidden absolute')}>
                                     <FormControl>
-                                        <input 
+                                        <input
                                             placeholder={locale === 'ar' ? "رابط الفندق على الويب (اختياري)" : 'Hotel Website Link (Optional)'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
@@ -250,7 +247,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "العنوان" : 'Address'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full outline-none rounded-md'
                                                 {...field}
@@ -266,7 +263,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "الرمز البريدي" : 'Zip Code'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full lg:max-w-[160px] outline-none rounded-md'
                                                 {...field}
@@ -284,7 +281,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "نوع الغرفة" : 'Room Type'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -300,7 +297,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "نوع اللوح" : 'Board Type'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -321,41 +318,41 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                         <div className={cn("grid gap-2")}>
                                             <Popover>
                                                 <PopoverTrigger asChild>
-                                                <Button
-                                                    id="date"
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                    "w-full justify-start text-left font-normal text-black h-16 bg-white shadow-lg border border-[#0000001A] px-10",
-                                                    !field.value?.from && "text-muted-foreground"
-                                                    )}
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {field.value?.from ? (
-                                                    field.value.to ? (
-                                                        <>
-                                                        {format(field.value.from, "LLL dd, y")} -{" "}
-                                                        {format(field.value.to, "LLL dd, y")}
-                                                        </>
-                                                    ) : (
-                                                        format(field.value.from, "LLL dd, y")
-                                                    )
-                                                    ) : (
-                                                    <span>{locale === 'ar' ? "اختر تاريخا" : 'Pick a date'}</span>
-                                                    )}
-                                                </Button>
+                                                    <Button
+                                                        id="date"
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                            "w-full justify-start text-left font-normal text-black h-16 bg-white shadow-lg border border-[#0000001A] px-10",
+                                                            !field.value?.from && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                        {field.value?.from ? (
+                                                            field.value.to ? (
+                                                                <>
+                                                                    {format(field.value.from, "LLL dd, y")} -{" "}
+                                                                    {format(field.value.to, "LLL dd, y")}
+                                                                </>
+                                                            ) : (
+                                                                format(field.value.from, "LLL dd, y")
+                                                            )
+                                                        ) : (
+                                                            <span>{locale === 'ar' ? "اختر تاريخا" : 'Pick a date'}</span>
+                                                        )}
+                                                    </Button>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar
-                                                    initialFocus
-                                                    mode="range"
-                                                    defaultMonth={field.value?.from}
-                                                    selected={field.value}
-                                                    onSelect={field.onChange}
-                                                    numberOfMonths={2}
-                                                    disabled={(date) => {
-                                                        return date < tomorrow;
-                                                    }}
-                                                />
+                                                    <Calendar
+                                                        initialFocus
+                                                        mode="range"
+                                                        defaultMonth={field.value?.from}
+                                                        selected={field.value}
+                                                        onSelect={field.onChange}
+                                                        numberOfMonths={2}
+                                                        disabled={(date) => {
+                                                            return date < tomorrow;
+                                                        }}
+                                                    />
                                                 </PopoverContent>
                                             </Popover>
                                         </div>
@@ -371,7 +368,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "الافراد" : 'Adults'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -390,7 +387,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'hotel-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "الأطفال" : 'Children'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -412,7 +409,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                             render={({ field }) => (
                                 <FormItem className={cn("", tab !== 'booking-details' && 'hidden absolute')}>
                                     <FormControl>
-                                        <input 
+                                        <input
                                             placeholder={locale === 'ar' ? "الاسم الكامل" : 'Full Name'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
@@ -430,7 +427,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                     render={({ field }) => (
                                         <FormItem className={cn("", tab !== 'booking-details' && 'hidden absolute')}>
                                             <FormControl>
-                                                <select 
+                                                <select
                                                     className='text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-4 w-full max-w-[100px] outline-none rounded-md'
                                                     {...field}
                                                 >
@@ -447,7 +444,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                     render={({ field }) => (
                                         <FormItem className={cn("flex-1", tab !== 'booking-details' && 'hidden absolute')}>
                                             <FormControl>
-                                                <input 
+                                                <input
                                                     placeholder={locale === 'ar' ? "رقم الهاتف" : 'Phone Number'}
                                                     className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full outline-none rounded-md'
                                                     {...field}
@@ -464,7 +461,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'booking-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "البريد الإلكتروني" : 'Email'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -481,7 +478,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                             render={({ field }) => (
                                 <FormItem className={cn("", tab !== 'booking-details' && 'hidden absolute')}>
                                     <FormControl>
-                                        <input 
+                                        <input
                                             placeholder={locale === 'ar' ? "طريقة المشتري" : 'Booking Method'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
@@ -498,7 +495,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'booking-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "رقم الطريق" : 'Itinerary Number'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -514,7 +511,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'booking-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "السعر" : 'Price'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -527,7 +524,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                     </FormItem>
                                 )}
                             />
-                        </div>  
+                        </div>
                         {tab === 'verification' && (
                             <div onClick={() => fileInputRef.current?.click()} className='rounded-[6px] gap-4 flex items-center justify-center w-full bg-white shadow-[0px_0px_4px_2px_rgba(0,0,0,0.15)] py-4 px-6 font-poppins relative text-black outline-none cursor-pointer'>
                                 <input onChange={handleUploadTicketsPdfs} className='hidden absolute w-full h-full' type='file' multiple={false} accept=".pdf,.jpg,.jpeg,.png" ref={fileInputRef} />
@@ -536,14 +533,14 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                         src='/assets/uploadedCheck.svg'
                                         alt='upload'
                                         width={23}
-                                        height={24} 
+                                        height={24}
                                     />
                                 ) : (
                                     <Image
                                         src='/assets/upload.svg'
                                         alt='upload'
                                         width={32}
-                                        height={26} 
+                                        height={26}
                                     />
                                 )}
                                 {uploadedProof ? (
@@ -556,7 +553,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                         <p className='font-light text-[10px] text-[rgba(0,0,0,0.5)]'>PDF,JPG,JPEG,PNG</p>
                                     </div>
                                 )}
-                                {uploadedProof && <p onClick={(e) => {e.stopPropagation(); setUploadedProof(null)}} className='text-[rgba(0,0,0,0.5)] absolute top-[70%] right-[5%] underline text-[10px]'>{locale === 'ar' ? "حذف" : 'Delete'}</p>}
+                                {uploadedProof && <p onClick={(e) => { e.stopPropagation(); setUploadedProof(null) }} className='text-[rgba(0,0,0,0.5)] absolute top-[70%] right-[5%] underline text-[10px]'>{locale === 'ar' ? "حذف" : 'Delete'}</p>}
                             </div>
                         )}
                         {tab === 'verification' && (
@@ -565,7 +562,7 @@ export default function HotelReservationsForm({ user, locale }: { user: UserType
                                     src="/assets/bulb.svg"
                                     alt="bulb"
                                     width={17}
-                                    height={17} 
+                                    height={17}
                                 />
                                 <p className='font-poppins font-normal text-sm text-center'>
                                     {locale === 'ar' ? "نصيحة : يمكن أن تكون التحقق من شاشة من سياسة الفندق، موضوع البريد الإلكتروني إلخ." : 'Tip : Verification could be a screenshot from hotel’s policy, an e-mail thread etc....'}

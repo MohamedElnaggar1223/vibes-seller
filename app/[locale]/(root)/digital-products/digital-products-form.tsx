@@ -10,7 +10,7 @@ import {
     FormField,
     FormItem,
     FormMessage,
-  } from "@/components/ui/form"
+} from "@/components/ui/form"
 import { Loader2 } from "lucide-react"
 import { useRef, useState } from "react"
 import { db } from "@/firebase/client/config"
@@ -41,8 +41,7 @@ const digitalProductSchema = z.object({
     notes: z.string().optional()
 })
 
-export default function DigitalProductsForm({ user, locale }: { user: UserType, locale: string | undefined })
-{
+export default function DigitalProductsForm({ user, locale }: { user: UserType, locale: string | undefined }) {
     const router = useRouter()
 
     const btnRef = useRef<HTMLButtonElement>(null)
@@ -66,11 +65,11 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
             inspectionPeriod: ''
         },
     })
-    
+
     async function onSubmit(values: z.infer<typeof digitalProductSchema>) {
         setLoading(true)
 
-        if(!values.role) {
+        if (!values.role) {
             form.setError('role', {
                 message: 'Role is required'
             })
@@ -78,7 +77,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
             return
         }
 
-        if(!values.currency) {
+        if (!values.currency) {
             form.setError('currency', {
                 message: 'Currency is required'
             })
@@ -86,7 +85,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
             return
         }
 
-        if(!values.itemCategory) {
+        if (!values.itemCategory) {
             form.setError('itemCategory', {
                 message: 'Item Category is required'
             })
@@ -94,28 +93,26 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
             return
         }
 
-        try
-        {
+        try {
             await runTransaction(db, async (transaction) => {
                 const digitalProductDoc = doc(collection(db, "digitalProducts"))
-    
+
                 const addedDigitalProduct = {
                     ...values,
                     status: 'pending',
                     userId: user.id,
+                    id: digitalProductDoc.id,
                 }
-    
+
                 await transaction.set(digitalProductDoc, addedDigitalProduct)
             })
 
             router.push('/dashboard?tab=digital-products')
         }
-        catch(e: any)
-        {
+        catch (e: any) {
             setError(e?.message ?? 'Something went wrong')
         }
-        finally
-        {
+        finally {
             setLoading(false)
         }
     }
@@ -131,7 +128,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                             render={({ field }) => (
                                 <FormItem className={cn("", tab !== 'digitalProduct-details' && 'hidden absolute')}>
                                     <FormControl>
-                                        <input 
+                                        <input
                                             placeholder={locale === 'ar' ? "عنوان المعاملة" : 'Transaction Title'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
@@ -148,7 +145,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'digitalProduct-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <select 
+                                            <select
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             >
@@ -169,7 +166,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                                 render={({ field }) => (
                                     <FormItem className={cn("lg:max-w-[218px]", tab !== 'digitalProduct-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "فترة الفحص" : 'Inspection Period'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -187,7 +184,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'digitalProduct-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "اسم العنصر" : 'Item Name'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full outline-none rounded-md'
                                                 {...field}
@@ -203,7 +200,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'digitalProduct-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <select 
+                                            <select
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full outline-none rounded-md'
                                                 {...field}
                                             >
@@ -223,7 +220,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'digitalProduct-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <input 
+                                            <input
                                                 placeholder={locale === 'ar' ? "السعر" : 'Price'}
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
@@ -242,7 +239,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                                 render={({ field }) => (
                                     <FormItem className={cn("flex-1", tab !== 'digitalProduct-details' && 'hidden absolute')}>
                                         <FormControl>
-                                            <select 
+                                            <select
                                                 className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                                 {...field}
                                             >
@@ -264,7 +261,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                             render={({ field }) => (
                                 <FormItem className={cn("")}>
                                     <FormControl>
-                                        <textarea 
+                                        <textarea
                                             placeholder={locale === 'ar' ? "وصف العنصر" : 'Item Description'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
@@ -281,7 +278,7 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                             render={({ field }) => (
                                 <FormItem className={cn("")}>
                                     <FormControl>
-                                        <textarea 
+                                        <textarea
                                             placeholder={locale === 'ar' ? "ملاحظات (اختيارية)" : 'Notes (optional)'}
                                             className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
                                             {...field}
@@ -301,10 +298,10 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                         <button type='submit' className='hidden' ref={btnRef} />
                         <Dialog open={warningOpen} onOpenChange={setWarningOpen}>
                             <DialogContent className='flex flex-col text-center !bg-white items-center justify-center bg-transparent border-none outline-none'>
-                            {locale === 'ar' ? 'عند الموافقة على بيع منتجك، ستحتفظ Vibes بأموالك وسيتم تحريرها في حسابك البنكي بمجرد انتهاء فترة الفحص أو عند انتهاء المشترين من تأكيد تطابق المنتجات مع تفاصيل القائمة. عادةً ما يستغرق تحويل الأموال إلى الحساب البنكي للبائع من 15 إلى 20 يومًا.' : "Upon agreeing to sell your product, your money will be held by Vibes and released into your bank account once inspection period ends or upon confirmation from buyers end that products matches details of listing. Funds usually takes 15-20 days to be released into sellers bank account."}
+                                {locale === 'ar' ? 'عند الموافقة على بيع منتجك، ستحتفظ Vibes بأموالك وسيتم تحريرها في حسابك البنكي بمجرد انتهاء فترة الفحص أو عند انتهاء المشترين من تأكيد تطابق المنتجات مع تفاصيل القائمة. عادةً ما يستغرق تحويل الأموال إلى الحساب البنكي للبائع من 15 إلى 20 يومًا.' : "Upon agreeing to sell your product, your money will be held by Vibes and released into your bank account once inspection period ends or upon confirmation from buyers end that products matches details of listing. Funds usually takes 15-20 days to be released into sellers bank account."}
                                 <div className='flex items-center justify-center gap-2 mt-4'>
                                     <button onClick={() => setWarningOpen(false)} className='bg-[#E72377] rounded-[4px] font-light py-3 flex-1 text-sm max-w-[160px] w-screen px-6 text-white font-poppins'>{locale === 'ar' ? "التخلي عن المعاملة" : 'Decline'}</button>
-                                    <button onClick={() => {setWarningOpen(false); btnRef.current?.click()}} className='bg-white rounded-[4px] font-light py-3 flex-1 text-sm max-w-[160px] w-screen px-6 text-black font-poppins'>{locale === 'ar' ? "الموافقة على المعاملة" : 'Agree'}</button>
+                                    <button onClick={() => { setWarningOpen(false); btnRef.current?.click() }} className='bg-white rounded-[4px] font-light py-3 flex-1 text-sm max-w-[160px] w-screen px-6 text-black font-poppins'>{locale === 'ar' ? "الموافقة على المعاملة" : 'Agree'}</button>
                                 </div>
                             </DialogContent>
                         </Dialog>
