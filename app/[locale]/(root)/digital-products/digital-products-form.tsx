@@ -27,9 +27,10 @@ const digitalProductSchema = z.object({
     itemName: z.string().min(3, {
         message: 'Item Name must be at least 3 characters long'
     }),
-    inspectionPeriod: z.string().min(3, {
-        message: 'required'
+    inspectionPeriodValue: z.string().refine((value) => parseInt(value) >= 1, {
+        message: 'Inspection period must be at least 1'
     }),
+    inspectionPeriodUnit: z.enum(['hours', 'days', 'months', '']),
     itemCategory: z.enum(['', 'Vehicles']),
     price: z.string().refine((adults) => parseInt(adults) >= 1, {
         message: 'price must be at least 1'
@@ -43,9 +44,7 @@ const digitalProductSchema = z.object({
 
 export default function DigitalProductsForm({ user, locale }: { user: UserType, locale: string | undefined }) {
     const router = useRouter()
-
     const btnRef = useRef<HTMLButtonElement>(null)
-
     const [tab, setTab] = useState<'digitalProduct-details' | 'booking-details' | 'verification'>('digitalProduct-details')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -62,7 +61,8 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
             itemName: '',
             notes: '',
             role: '',
-            inspectionPeriod: ''
+            inspectionPeriodValue: '',
+            inspectionPeriodUnit: ''
         },
     })
 
@@ -93,12 +93,21 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
             return
         }
 
+        if (!values.inspectionPeriodUnit) {
+            form.setError('inspectionPeriodUnit', {
+                message: 'Inspection period unit is required'
+            })
+            setLoading(false)
+            return
+        }
+
         try {
             await runTransaction(db, async (transaction) => {
                 const digitalProductDoc = doc(collection(db, "digitalProducts"))
 
                 const addedDigitalProduct = {
                     ...values,
+                    inspectionPeriod: `${values.inspectionPeriodValue} ${values.inspectionPeriodUnit}`,
                     status: 'pending',
                     userId: user.id,
                     id: digitalProductDoc.id,
@@ -160,22 +169,47 @@ export default function DigitalProductsForm({ user, locale }: { user: UserType, 
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="inspectionPeriod"
-                                render={({ field }) => (
-                                    <FormItem className={cn("lg:max-w-[218px]", tab !== 'digitalProduct-details' && 'hidden absolute')}>
-                                        <FormControl>
-                                            <input
-                                                placeholder={locale === 'ar' ? "فترة الفحص" : 'Inspection Period'}
-                                                className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-10 w-full max-sm:max-w-[340px] outline-none rounded-md'
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage className="absolute font-poppins text-[#7F1D1D] max-w-[200px] text-xs" />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className="flex gap-2 flex-1">
+                                <FormField
+                                    control={form.control}
+                                    name="inspectionPeriodValue"
+                                    render={({ field }) => (
+                                        <FormItem className={cn("flex-1", tab !== 'digitalProduct-details' && 'hidden absolute')}>
+                                            <FormControl>
+                                                <input
+                                                    placeholder={locale === 'ar' ? "فترة الفحص" : 'Inspection Period'}
+                                                    className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-2 w-full flex-1 outline-none rounded-md'
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        field.onChange(e.target.value === '' ? '' : /^-?\d*\.?\d*$/.test(e.target.value) ? e.target.value : field.value)
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormMessage className="absolute font-poppins text-[#7F1D1D] text-xs" />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="inspectionPeriodUnit"
+                                    render={({ field }) => (
+                                        <FormItem className={cn("", tab !== 'digitalProduct-details' && 'hidden absolute')}>
+                                            <FormControl>
+                                                <select
+                                                    className='placeholder:text-[rgba(0,0,0,0.5)] text-black shadow-lg border border-[#0000001A] font-poppins py-5 text-base px-2 w-full max-w-[100px] outline-none rounded-md'
+                                                    {...field}
+                                                >
+                                                    <option disabled value="">{locale === 'ar' ? "الوحدة" : 'Unit'}</option>
+                                                    <option value="hours">{locale === 'ar' ? "ساعات" : 'Hours'}</option>
+                                                    <option value="days">{locale === 'ar' ? "أيام" : 'Days'}</option>
+                                                    <option value="months">{locale === 'ar' ? "شهور" : 'Months'}</option>
+                                                </select>
+                                            </FormControl>
+                                            <FormMessage className="absolute font-poppins text-[#7F1D1D] text-xs" />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </div>
                         <div className={cn("flex w-full gap-2 max-lg:flex-col", tab !== 'digitalProduct-details' && 'hidden absolute')}>
                             <FormField
